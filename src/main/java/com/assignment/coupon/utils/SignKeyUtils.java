@@ -10,10 +10,13 @@ import java.security.Key;
 @Slf4j
 public class SignKeyUtils {
 
-    public static String saveHs512Key(){
-        Key key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
+    public static String saveHmcAndShaKey(String signatureAlgorithm){
+
+        Key key = Keys.secretKeyFor(SignatureAlgorithm.valueOf(signatureAlgorithm));
         String symmetricKey = Encoders.BASE64.encode(key.getEncoded());
-        log.debug("hs512: "+ symmetricKey);
+        log.debug(signatureAlgorithm+": "+ symmetricKey);
         return symmetricKey;
     }
+
+
 }

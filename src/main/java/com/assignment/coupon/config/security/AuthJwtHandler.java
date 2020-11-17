@@ -12,7 +12,7 @@ import java.util.*;
 @Slf4j
 public class AuthJwtHandler {
 
-    public String createJwt(String subject, String issuner, Key key, int minute) {
+    public String createJwt(String subject, String issuner, Key key, int minute, List<String> scops) {
 
         String jwt = "";
         String jti = UUID.randomUUID().toString();
@@ -21,12 +21,14 @@ public class AuthJwtHandler {
         cal.setTime(new Date(System.currentTimeMillis()));
         cal.add(Calendar.MINUTE, minute);
 
-        List<String> scops = new ArrayList<>();
+        if(scops==null){
+            scops = new ArrayList<>();
+        }
 
         Map<String, Object> claims = new HashMap<String, Object>();
         claims.put("sub", subject);
         claims.put("iss", issuner);
-        claims.put("scopes",scops);
+        claims.put("scope",scops);
 
         try {
             jwt = Jwts.builder()
@@ -34,7 +36,7 @@ public class AuthJwtHandler {
                     .setExpiration(new Date(cal.getTimeInMillis()))
                     .setIssuedAt(new Date(System.currentTimeMillis()))
                     .setId(jti)
-                    .signWith(key, SignatureAlgorithm.HS512)
+                    .signWith(key, SignatureAlgorithm.HS256)
                     .compact();
         } catch (Exception e) {
             log.error("Create JsonWebToken Error",e);
