@@ -11,6 +11,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -50,7 +51,7 @@ public class AuthProvider implements AuthenticationProvider {
             //3. userDetail
             details.put("user",user);
 
-        }catch (NoSuchElementException e){
+        }catch (UsernameNotFoundException e){
             log.info(e.getMessage());
             throw new UserCredentialNotValidException("userName & password not valid");
         }

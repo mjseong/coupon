@@ -11,7 +11,7 @@ public class JwtSignUtilTest {
     @Test
     public void getSignKey(){
         String signKey = SignKeyUtils.saveHmcAndShaKey("HS256");
-        System.out.println(signKey);        //hs512
+        System.out.println("key.size:"+signKey.length() +", key: " + signKey);        //hs512
 //        Assertions.assertEquals(128, signKey.length());
     }
 }
