@@ -10,7 +10,7 @@ import java.util.*;
 
 @Component
 @Slf4j
-public class AuthJwtProvider {
+public class AuthJwtHandler {
 
     public String createJwt(String subject, String issuner, Key key, int minute) {
 
@@ -21,9 +21,12 @@ public class AuthJwtProvider {
         cal.setTime(new Date(System.currentTimeMillis()));
         cal.add(Calendar.MINUTE, minute);
 
+        List<String> scops = new ArrayList<>();
+
         Map<String, Object> claims = new HashMap<String, Object>();
         claims.put("sub", subject);
         claims.put("iss", issuner);
+        claims.put("scopes",scops);
 
         try {
             jwt = Jwts.builder()

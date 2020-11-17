@@ -11,7 +11,6 @@ import org.springframework.security.config.annotation.web.configurers.oauth2.ser
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationProvider;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
@@ -22,13 +21,13 @@ import java.security.Key;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final AuthProvider authProvider;
-    private final AuthJwtProvider jwtProvider;
+    private final AuthJwtHandler jwtHandler;
 
     @Value("${application.security.jwt.symmetric-signkey}")String encryptedKey;
 
-    public SecurityConfig(AuthProvider authProvider, AuthJwtProvider jwtProvider){
+    public SecurityConfig(AuthProvider authProvider, AuthJwtHandler jwtHandler){
         this.authProvider = authProvider;
-        this.jwtProvider = jwtProvider;
+        this.jwtHandler = jwtHandler;
     }
 
     @Override
