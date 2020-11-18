@@ -2,14 +2,15 @@ package com.assignment.coupon.domain.entity;
 
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.time.Instant;
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "user_info")
@@ -26,6 +27,9 @@ public class User implements UserDetails {
     @Column(name="user_password")
     private String password;
 
+    @Column(name="user_authorities")
+    private String authorities;
+
     @Column(name = "user_create_datetime")
     private Instant createDtNo;
 
@@ -34,7 +38,7 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        return AuthorityUtils.createAuthorityList(authorities.split(","));
     }
 
     public String getPassword() {
@@ -43,7 +47,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return null;
+        return userName;
     }
 
     @Override
@@ -92,6 +96,7 @@ public class User implements UserDetails {
 
         private String userName = "";
         private String password = "";
+        private String authorities;
         private Instant updateDtNo = null;
 
         public Builder userName(String userName){
@@ -101,6 +106,13 @@ public class User implements UserDetails {
 
         public Builder password(String password){
             this.password = password;
+            return this;
+        }
+
+        public Builder authorities(List<String> authorities){
+
+            this.authorities = authorities.stream()
+                                        .collect(Collectors.joining(","));
             return this;
         }
 
@@ -117,6 +129,7 @@ public class User implements UserDetails {
     public User(Builder builder){
         this.userName = builder.userName;
         this.password = builder.password;
+        this.authorities = builder.authorities;
         this.createDtNo = builder.createDtNo;
         this.updateDtNo = builder.updateDtNo;
     }

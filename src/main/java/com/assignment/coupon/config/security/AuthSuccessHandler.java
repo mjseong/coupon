@@ -3,6 +3,7 @@ package com.assignment.coupon.config.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 import javax.servlet.FilterChain;
@@ -12,10 +13,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 import java.io.IOException;
 import java.security.Key;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class AuthSuccessHandler implements AuthenticationSuccessHandler {
 
@@ -42,9 +41,19 @@ public class AuthSuccessHandler implements AuthenticationSuccessHandler {
 
         if(authentication!=null){
             String userId = authentication.getName();
-            List<String> scops = Arrays.asList("coupon:read","coupon:write");
+            Set<String> scops = new HashSet<>();
+            scops.addAll(Arrays.asList("coupon:read","coupon:write"));
 
-            String accessToken = authJwtHandler.createJwt(userId, issuner, secretKey, 30, scops);
+            Set<String> roles = authentication.getAuthorities().stream()
+                                            .map(p-> p.getAuthority())
+                                            .collect(Collectors.toSet());
+
+            if(roles.contains("ROLE_ADMIN")){
+                scops.add("coupon_admin:read");
+                scops.add("coupon_admin:write");
+            }
+
+            String accessToken = authJwtHandler.createJwt(userId, issuner, secretKey, 30, scops, roles);
             map.put("access_token", accessToken);
         }
         ObjectMapper mapper = new ObjectMapper();

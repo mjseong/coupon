@@ -3,6 +3,7 @@ package com.assignment.coupon.config.security;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -12,7 +13,7 @@ import java.util.*;
 @Slf4j
 public class AuthJwtHandler {
 
-    public String createJwt(String subject, String issuner, Key key, int minute, List<String> scops) {
+    public String createJwt(String subject, String issuner, Key key, int minute, Set<String> scops, Set<String> authorities) {
 
         String jwt = "";
         String jti = UUID.randomUUID().toString();
@@ -22,13 +23,14 @@ public class AuthJwtHandler {
         cal.add(Calendar.MINUTE, minute);
 
         if(scops==null){
-            scops = new ArrayList<>();
+            scops = new HashSet<>();
         }
 
         Map<String, Object> claims = new HashMap<String, Object>();
         claims.put("sub", subject);
         claims.put("iss", issuner);
         claims.put("scope",scops);
+        claims.put("authorities", authorities);
 
         try {
             jwt = Jwts.builder()

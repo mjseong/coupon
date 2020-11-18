@@ -8,7 +8,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -16,7 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-import java.util.stream.Collectors;
+
 
 @Component
 @Slf4j
@@ -37,10 +36,12 @@ public class AuthProvider implements AuthenticationProvider {
         String userId = authentication.getName();
         String password = (String) authentication.getCredentials();
         Map<String, Object> details = new HashMap<>();
+        Collection<GrantedAuthority> roles;
 
         try{
             //1.UserDetailService find userId
             UserDetails user = userDetailsService.loadUserByUsername(userId);
+            roles = (Collection<GrantedAuthority>) user.getAuthorities();
 
             //2. password vaild check
             if(!passwordEncoder.matches(password,user.getPassword())){
@@ -56,16 +57,13 @@ public class AuthProvider implements AuthenticationProvider {
             throw new UserCredentialNotValidException("userName & password not valid");
         }
 
-        //4. role
-        List<String> roles = Arrays.asList("ROLE_USER");
-        Collection<GrantedAuthority> grants = roles.stream()
-                .map(p->new SimpleGrantedAuthority(p))
-                .collect(Collectors.toList());
+        if(roles != null){
+            UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(userId, password, roles);
+            token.setDetails(details);
+            return token;
+        }
 
-        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(userId, password, grants);
-        token.setDetails(details);
-
-        return token;
+        return null;
     }
 
     @Override

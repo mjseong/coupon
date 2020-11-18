@@ -28,7 +28,8 @@ public class UserController {
     public ResponseEntity signUp(@RequestBody @Valid UserDto userDto){
 
         User user = customUserDetailService.createUser(userDto.getUserId(),
-                                                    userDto.getPassword());
+                                                    userDto.getPassword(),
+                                                    userDto.getAdminRole());
 
         return new ResponseEntity(user.getUsername(), HttpStatus.OK);
 

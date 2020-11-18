@@ -15,8 +15,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -29,7 +28,8 @@ public class ConponIntegrationTests {
     @Autowired
     MockMvc mockMvc;
     ObjectMapper mapper;
-    String accessToken;
+    static String accessToken;
+    static String adminAccessToken;
 
     @BeforeEach
     void init(){
@@ -39,7 +39,7 @@ public class ConponIntegrationTests {
     //signup
     @Test
     @Order(1)
-    void signupTest() throws Exception{
+    void signupUserTest() throws Exception{
 
         Map<String, Object> map = new HashMap<>();
         map.put("userId","smj");
@@ -54,10 +54,28 @@ public class ConponIntegrationTests {
             .andReturn();
     }
 
-    //signin
     @Test
     @Order(2)
-    void signinTest() throws Exception {
+    void signupAdminTest() throws Exception{
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("userId","admin");
+        map.put("password","123456");
+        map.put("adminRole","true");
+        String jsonBody = this.mapper.writeValueAsString(map);
+
+        MvcResult signUpResult = this.mockMvc.perform(post("/signup")
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(jsonBody))
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
+    //signin user
+    @Test
+    @Order(3)
+    void signinUserTest() throws Exception {
 
         MvcResult signinResult = this.mockMvc.perform(post("/signin")
                     .accept(MediaType.APPLICATION_JSON)
@@ -69,25 +87,66 @@ public class ConponIntegrationTests {
                 .andReturn();
 
         String json = signinResult.getResponse().getContentAsString();
-        Assertions.assertNull(json);
+        Assertions.assertNotNull(json);
 
         Map<String,Object> resultMap = this.mapper.readValue(json, new TypeReference<Map>(){});
         this.accessToken = (String) resultMap.get("access_token");
 
     }
 
-    //coupon generator; post
-    @Disabled
+    //signin admin
     @Test
-    @Order(3)
-    void createCuoponTest() throws Exception {
+    @Order(4)
+    void signinAdminTest() throws Exception {
+
+        MvcResult signinResult = this.mockMvc.perform(post("/signin")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .param("userId","admin")
+                .param("password","123456"))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+
+        String json = signinResult.getResponse().getContentAsString();
+        Assertions.assertNotNull(json);
+
+        Map<String,Object> resultMap = this.mapper.readValue(json, new TypeReference<Map>(){});
+        this.adminAccessToken = (String) resultMap.get("access_token");
+
+    }
+
+    @Test
+    @Order(5)
+    void tokenPassTest() throws Exception {
+
+        MvcResult couponResult = this.mockMvc.perform(get("/authtoken-test")
+                .header("Authorization", "bearer "+this.accessToken)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
+    //coupon create; post /api/coupons
+
+    /**
+     * 쿠폰 발급 n개
+     * coupon create: post /api/coupons
+     * input param
+     * @throws Exception
+     */
+
+    @Test
+    @Order(6)
+    void createCouponTest() throws Exception {
         Map<String, Object> map = new HashMap();
         map.put("count", 10);
 
         String jsonBody = this.mapper.writeValueAsString(map);
 
-        MvcResult couponResult = this.mockMvc.perform(post("/api/coupon")
-                        .header("Authorization", "bearer "+this.accessToken)
+        MvcResult couponResult = this.mockMvc.perform(post("/api/coupons")
+                        .header("Authorization", "bearer "+this.adminAccessToken)
                         .accept(MediaType.APPLICATION_JSON_VALUE)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(jsonBody))
@@ -95,13 +154,130 @@ public class ConponIntegrationTests {
                 .andReturn();
     }
 
-    //coupon assign ; put /api/coupon/{couponId}/assign
+    /**
+     * 사용자에게 단일 쿠폰 지급;
+     * input param: couponCode, userId
+     * coupon assign by issuer ; put /api/coupons/{couponCode}/users/{userId}/assign
+     */
 
-    //coupon use ; put /api/coupon/{couponId}/use
+    @Disabled
+    @Test
+    @Order(6)
+    void assignCouponTest() throws Exception {
 
-    //coupon cancel ; delete /api/coupon/{couponId}/cancel
+        MvcResult couponResult = this.mockMvc.perform(put("/api/coupons/{couponCode}/users/{userId}/assign")
+                .header("Authorization", "bearer "+this.accessToken)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                .andReturn();
+    }
 
-    //coupon list by userId ; get
 
-    //used coupon list ; get
+    /**
+     * 사용자에게 대량 쿠폰 지급;
+     * coupon bulk-assign by issuer; put /api/coupons/bulk-assign
+     */
+//    @Test
+//    @Order(3)
+//    void createCuoponTest() throws Exception {
+//        Map<String, Object> map = new HashMap();
+//        map.put("count", 10);
+//
+//        String jsonBody = this.mapper.writeValueAsString(map);
+//
+//        MvcResult couponResult = this.mockMvc.perform(post("/api/coupon")
+//                .header("Authorization", "bearer "+this.accessToken)
+//                .accept(MediaType.APPLICATION_JSON_VALUE)
+//                .contentType(MediaType.APPLICATION_JSON_VALUE)
+//                .content(jsonBody))
+//                .andExpect(status().isOk())
+//                .andReturn();
+//    }
+
+    /**
+     * 지급된 쿠폰 사용;
+     * access_token사용;
+     * role_user : check token_sub == userId
+     * role_admin : ignore token_sub != userId
+     * input param: userId, couponId
+     * coupon use ; put /api/coupons/{couponCode}/users/{userId}/use
+     */
+    @Disabled
+    @Test
+    @Order(5)
+    void useCouponTest() throws Exception {
+
+        MvcResult couponResult = this.mockMvc.perform(post("/api/coupons/{couponCode}/users/{userId}/use")
+                .header("Authorization", "bearer "+this.accessToken)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
+    /**
+     * 지급된 쿠폰중 취소;
+     * access_token사용;
+     * role_user : check token_sub == userId
+     * role_admin : ignore token_sub != userId
+     * input param: userId, couponId
+     * coupon cancel : put /api/coupons/{couponCode}/users/{userId}/cancel
+     */
+    @Disabled
+    @Test
+    @Order(6)
+    void cancelCouponTest() throws Exception {
+
+        MvcResult couponResult = this.mockMvc.perform(put("/api/coupons/{couponCode}/users/{userId}/cancel")
+                .header("Authorization", "bearer "+this.accessToken)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
+    /**
+     * 사용자에게 지급된 쿠폰 조회;
+     * access_token사용;
+     * input param: couponId
+     * coupon by userId : get /api/coupons
+     */
+    @Disabled
+    @Test
+    @Order(7)
+    void findAssignedCouponTest() throws Exception {
+        Map<String, Object> map = new HashMap();
+        map.put("count", 10);
+
+        String jsonBody = this.mapper.writeValueAsString(map);
+
+        MvcResult couponResult = this.mockMvc.perform(post("/api/coupons/{couponCode}")
+                .header("Authorization", "bearer "+this.accessToken)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(jsonBody))
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
+
+    /**
+     * 당일만료된 전체쿠폰 목록
+     * input param : date
+     * used coupon-list : get  /api/coupons/expired-coupon
+     */
+    @Disabled
+    @Test
+    @Order(8)
+    void createCuoponTest() throws Exception {
+
+        MvcResult couponResult = this.mockMvc.perform(post("/api/coupons/expired-coupon")
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .param("",""))
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
 }
