@@ -9,7 +9,7 @@ spring:
     url: jdbc:mariadb://127.0.0.1:3306/coupon
     #    url: jdbc:h2:mem:moneyspread;DB_CLOSE_DELAY=-1
     username: root
-    password: tjdaudwo
+    password: 1234
     hikari:
       pool-name: SpringBootHikariCP-pool
       maximum-pool-size: 3
