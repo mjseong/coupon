@@ -15,20 +15,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class CustomUserDetailService implements UserDetailsService {
+public class UserDetailServiceImpl implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public CustomUserDetailService(UserRepository userRepository,
-                                   PasswordEncoder passwordEncoder){
+    public UserDetailServiceImpl(UserRepository userRepository,
+                                 PasswordEncoder passwordEncoder){
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findById(username).orElseThrow(()->new UsernameNotFoundException("not found username: "+ username));
+        User user = userRepository.findByUserName(username).orElseThrow(()->new UsernameNotFoundException("not found username: "+ username));
         return user;
     }
 
@@ -57,6 +57,6 @@ public class CustomUserDetailService implements UserDetailsService {
 
     @Transactional(readOnly = true)
     public boolean existsUser(String username){
-        return userRepository.existsById(username);
+        return !userRepository.findByUserName(username).isEmpty();
     }
 }

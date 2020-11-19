@@ -1,6 +1,7 @@
 package com.assignment.coupon.controller;
 
 import com.assignment.coupon.domain.dto.IssueDto;
+import com.assignment.coupon.service.CouponService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -13,10 +14,17 @@ import java.util.List;
 @RequestMapping("/api/coupons")
 public class CouponsController extends BaseController{
 
+    private final CouponService couponService;
+
+    public CouponsController(CouponService couponService){
+        this.couponService = couponService;
+    }
+
     @PostMapping
     public ResponseEntity createCoupons(@RequestBody IssueDto issueDto){
 
-        issueDto.getCount();
+        couponService.createCoupon(issueDto.getCount(), null);
+
         return new ResponseEntity(HttpStatus.OK);
     }
 

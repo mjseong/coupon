@@ -42,7 +42,7 @@ public class ConponIntegrationTests {
     void signupUserTest() throws Exception{
 
         Map<String, Object> map = new HashMap<>();
-        map.put("userId","smj");
+        map.put("userName","smj");
         map.put("password","123456");
         String jsonBody = this.mapper.writeValueAsString(map);
 
@@ -59,7 +59,7 @@ public class ConponIntegrationTests {
     void signupAdminTest() throws Exception{
 
         Map<String, Object> map = new HashMap<>();
-        map.put("userId","admin");
+        map.put("userName","admin");
         map.put("password","123456");
         map.put("adminRole","true");
         String jsonBody = this.mapper.writeValueAsString(map);
@@ -80,7 +80,7 @@ public class ConponIntegrationTests {
         MvcResult signinResult = this.mockMvc.perform(post("/signin")
                     .accept(MediaType.APPLICATION_JSON)
                     .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-                    .param("userId","smj")
+                    .param("userName","smj")
                     .param("password","123456"))
                 .andExpect(status().isOk())
                 .andDo(print())
@@ -102,7 +102,7 @@ public class ConponIntegrationTests {
         MvcResult signinResult = this.mockMvc.perform(post("/signin")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-                .param("userId","admin")
+                .param("userName","admin")
                 .param("password","123456"))
                 .andExpect(status().isOk())
                 .andDo(print())
@@ -201,14 +201,14 @@ public class ConponIntegrationTests {
      * role_user : check token_sub == userId
      * role_admin : ignore token_sub != userId
      * input param: userId, couponId
-     * coupon use ; put /api/coupons/{couponCode}/users/{userId}/use
+     * coupon use ; put /api/coupons/{couponCode}/use
      */
     @Disabled
     @Test
     @Order(5)
     void useCouponTest() throws Exception {
 
-        MvcResult couponResult = this.mockMvc.perform(post("/api/coupons/{couponCode}/users/{userId}/use")
+        MvcResult couponResult = this.mockMvc.perform(post("/api/coupons/{couponCode}/use")
                 .header("Authorization", "bearer "+this.accessToken)
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
@@ -222,14 +222,14 @@ public class ConponIntegrationTests {
      * role_user : check token_sub == userId
      * role_admin : ignore token_sub != userId
      * input param: userId, couponId
-     * coupon cancel : put /api/coupons/{couponCode}/users/{userId}/cancel
+     * coupon cancel : put /api/coupons/{couponCode}/cancel
      */
     @Disabled
     @Test
     @Order(6)
     void cancelCouponTest() throws Exception {
 
-        MvcResult couponResult = this.mockMvc.perform(put("/api/coupons/{couponCode}/users/{userId}/cancel")
+        MvcResult couponResult = this.mockMvc.perform(put("/api/coupons/{couponCode}/cancel")
                 .header("Authorization", "bearer "+this.accessToken)
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .contentType(MediaType.APPLICATION_JSON_VALUE))

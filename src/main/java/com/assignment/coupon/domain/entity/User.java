@@ -16,12 +16,14 @@ import java.util.stream.Collectors;
 @Table(name = "user_info")
 public class User implements UserDetails {
 
-    public User(){
-
-    }
+    public User(){}
 
     @Id
-    @Column(name="user_id")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Column(name = "user_id")
+    private long id;
+
+    @Column(name="user_name")
     private String userName;
 
     @Column(name="user_password")
@@ -68,6 +70,10 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return false;
+    }
+
+    public long getId() {
+        return id;
     }
 
     public void setPassword(String password) {
