@@ -21,6 +21,9 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import javax.transaction.Transactional;
 import java.security.SecureRandom;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -222,9 +225,7 @@ public class ConponIntegrationTests {
 
     /**
      * 지급된 쿠폰 사용;
-     * access_token사용;
-     * role_user : check token_sub == userId
-     * role_admin : ignore token_sub != userId
+     * access_token사용 role_admin 필요
      * input param: userId, couponId
      * coupon use ; put /api/coupons/{couponCode}/users/{username}/use
      */
@@ -243,9 +244,7 @@ public class ConponIntegrationTests {
 
     /**
      * 지급된 쿠폰 취소;
-     * access_token사용;
-     * role_user : check token_sub == userId
-     * role_admin : ignore token_sub != userId
+     * access_token사용 role_admin 필요
      * input param: userId, couponId
      * coupon cancel : put /api/coupons/{couponCode}/users/{username}/cancel
      */
@@ -264,54 +263,6 @@ public class ConponIntegrationTests {
     }
 
     /**
-     * 지급된 쿠폰 사용 취소;
-     * access_token사용;
-     * role_user : check token_sub == userId
-     * role_admin : ignore token_sub != userId
-     * input param: userId, couponId
-     * coupon cancel : put /api/coupons/{couponCode}/use
-     */
-
-//    @Disabled
-    @Test
-    @Order(103)
-    void useCouponByUserTest() throws Exception {
-
-        String apiUrl = "/api/coupons/"+this.dumyCouponCode+"/use";
-
-        MvcResult couponResult = this.mockMvc.perform(put(apiUrl)
-                .header("Authorization", "bearer "+this.accessToken)
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isOk())
-                .andDo(print())
-                .andReturn();
-    }
-
-    /**
-     * 지급된 사용자의해 쿠폰 사용 취소;
-     * access_token사용;
-     * input param: couponId
-     * coupon cancel : put /api/coupons/{couponCode}/cancel
-     */
-
-//    @Disabled
-    @Test
-    @Order(104)
-    void cancelCouponByUserTest() throws Exception {
-
-        String apiUrl = "/api/coupons/"+this.dumyCouponCode+"/cancel";
-
-        MvcResult couponResult2 = this.mockMvc.perform(put(apiUrl)
-                .header("Authorization", "bearer "+this.accessToken)
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isOk())
-                .andReturn();
-    }
-
-
-    /**
      * 당일만료된 전체쿠폰 목록
      * input param : date
      * used coupon-list : get  /api/coupons/expired-coupon
@@ -319,17 +270,18 @@ public class ConponIntegrationTests {
     @Disabled
     @Test
     @Order(200)
-    void createCuoponTest() throws Exception {
+    void findTodayExpireCuoponTest() throws Exception {
 
-        MvcResult couponResult = this.mockMvc.perform(post("/api/coupons/expired-coupon")
+        String datePlusOne = String.valueOf(Instant.now().plus(Duration.ofDays(1)).truncatedTo(ChronoUnit.DAYS));
+
+        MvcResult couponResult = this.mockMvc.perform(get("/api/coupons/expired-coupon")
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .param("",""))
+                .param("createDate", datePlusOne))
                 .andExpect(status().isOk())
+                .andDo(print())
                 .andReturn();
     }
-
-
 
     /**
      * 사용자에게 대량 쿠폰 지급;

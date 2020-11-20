@@ -2,6 +2,7 @@ package com.assignment.coupon.domain.state;
 
 public enum EnumCouponState {
 
+    //싱태: 발급, 지급, 사용, 만료
     ISSUE("ISSUE","ISSUED"),
     ASSIGN("ASSIGN","ASSIGNED"),
     CANCEL("CANCEL","ASSIGNED"),

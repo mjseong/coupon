@@ -7,12 +7,15 @@ import com.assignment.coupon.domain.state.EnumCouponState;
 import com.assignment.coupon.exception.CouponServiceException;
 import com.assignment.coupon.repository.CouponRepository;
 import com.assignment.coupon.service.CouponService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -20,6 +23,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
+@Slf4j
 public class CouponsServiceImpl implements CouponService {
 
     private final CouponRepository couponRepository;
@@ -66,12 +70,39 @@ public class CouponsServiceImpl implements CouponService {
         return null;
     }
 
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
     @Override
     public List<CouponDto> findCouponsByUserId(String userId) {
-        return couponRepository.findCouponsByUserIdAndState(userId, EnumCouponState.ASSIGN.getState())
-                                    .stream()
+        return couponRepository.findCouponsByUserIdAndState(userId, EnumCouponState.ASSIGN.getState()).stream()
                                     .map(p->new CouponDto(p.getCouponCode(), p.getIssuer(), p.getCreateDate(), p.getExpireDate()))
                                     .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
+    @Override
+    public List<CouponDto> findCouponsByCreateTodayAndExipiredState(Instant toDay) {
+        Instant toCreateDate = toDay.plus(Duration.ofDays(1));
+        return couponRepository.findCouponsByCreateDateBetweenAndState(toDay,toCreateDate,EnumCouponState.EXPIRE.getState()).stream()
+                .map(p->new CouponDto(p.getCouponCode(), p.getIssuer(), p.getCreateDate(), p.getExpireDate()))
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
+    @Override
+    public List<Coupon> findCouponsByExpireDateBetweenAndState(Instant fromExpireDate, Instant toExpireDate, String state) {
+
+        if(state!=null && !state.equals("")){
+            return couponRepository.findCouponsByExpireDateBetweenAndState(fromExpireDate,toExpireDate,state);
+        }
+
+        return couponRepository.findCouponsByExpireDateBetween(fromExpireDate, toExpireDate);
+
+    }
+
+    @Override
+    public String expireNotice(String couponCode, String userId) {
+        log.info(String.format("Dear %s, \n you have 3days left for coupon(%s) exipration Date ",userId, couponCode));
+        return couponCode;
     }
 
     @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
@@ -114,5 +145,11 @@ public class CouponsServiceImpl implements CouponService {
     public Coupon updateCouponState(Coupon coupon, String state) {
         coupon.setState(state);
         return couponRepository.save(coupon);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @Override
+    public List<Coupon> updateALLCoupon(List<Coupon> coupons) {
+        return couponRepository.saveAll(coupons);
     }
 }

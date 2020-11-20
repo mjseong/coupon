@@ -21,9 +21,18 @@ public interface CouponService {
 
     public Coupon updateCouponState(Coupon coupon, String state);
 
+    public List<Coupon> updateALLCoupon(List<Coupon> coupons);
+
     public Coupon findByCouponCodeAndStateAndUserNotNull(String couponCode, String state);
 
     public List<CouponDto> findCouponsByUserId(String userId);
+
+    public List<CouponDto> findCouponsByCreateTodayAndExipiredState(Instant today);
+
+    public List<Coupon> findCouponsByExpireDateBetweenAndState(Instant fromExpireDate, Instant toExpireDate, String state);
+
+    public String expireNotice(String couponCode, String userId);
+
 
 
 }
