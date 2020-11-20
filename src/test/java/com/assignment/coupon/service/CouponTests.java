@@ -15,9 +15,9 @@ public class CouponTests {
     CouponService couponService;
 
     @Test
-    void issueCoupon(){
-        long count = couponService.createCoupon(100000, null).size();
-        Assertions.assertEquals(100000, count);
+    void issueCoupon() {
+        long count = couponService.createCoupon(10000, null).getCouponCount();
+        Assertions.assertEquals(10000, count);
     }
 
 

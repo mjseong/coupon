@@ -1,5 +1,6 @@
 package com.assignment.coupon.domain.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.time.Instant;
@@ -9,7 +10,9 @@ public class CouponDto {
 
     String couponCode;
     String issuer;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     Instant createDate;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     Instant exprieDate;
 
     public CouponDto(String couponCode, String issuer, Instant createDate, Instant exprieDate) {

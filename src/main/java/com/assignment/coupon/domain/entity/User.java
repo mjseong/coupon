@@ -13,13 +13,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Entity
-@Table(name = "user_info")
+@Table(name = "user_info",
+        uniqueConstraints = {@UniqueConstraint(name = "idx_uniq_user_info_01", columnNames = {"user_name"})})
+@SequenceGenerator(name = "USER_SEQ_GEN",
+        sequenceName = "USER_SEQ",
+        allocationSize = 10)
 public class User implements UserDetails {
 
     public User(){}
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "USER_SEQ_GEN")
     @Column(name = "user_id")
     private long id;
 

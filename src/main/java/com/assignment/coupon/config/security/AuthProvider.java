@@ -1,7 +1,7 @@
 package com.assignment.coupon.config.security;
 
 import com.assignment.coupon.exception.UserCredentialNotValidException;
-import com.assignment.coupon.service.impl.UserDetailServiceImpl;
+import com.assignment.coupon.service.impl.CustomUserDetailService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,9 +24,9 @@ public class AuthProvider implements AuthenticationProvider {
     private final UserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
 
-    public AuthProvider(UserDetailServiceImpl userDetailServiceImpl,
+    public AuthProvider(CustomUserDetailService customUserDetailService,
                         PasswordEncoder passwordEncoder){
-        this.userDetailsService = userDetailServiceImpl;
+        this.userDetailsService = customUserDetailService;
         this.passwordEncoder = passwordEncoder;
     }
 

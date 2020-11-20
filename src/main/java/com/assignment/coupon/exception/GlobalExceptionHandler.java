@@ -10,6 +10,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = AlreadyExistsException.class)
     public ResponseEntity handleAlreadyExistsException(AlreadyExistsException aeE){
-        return new ResponseEntity(aeE.getMessage(), HttpStatus.CONFLICT);
+        return new ResponseEntity(ErrorResponse.body("409",aeE.getMessage(), null), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(value = CouponServiceException.class)
+    public ResponseEntity handleCouponServiceException(CouponServiceException csE){
+        return new ResponseEntity(ErrorResponse.body("500",csE.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

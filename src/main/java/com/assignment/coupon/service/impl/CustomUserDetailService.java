@@ -15,13 +15,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class UserDetailServiceImpl implements UserDetailsService {
+public class CustomUserDetailService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserDetailServiceImpl(UserRepository userRepository,
-                                 PasswordEncoder passwordEncoder){
+    public CustomUserDetailService(UserRepository userRepository,
+                                   PasswordEncoder passwordEncoder){
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -57,6 +57,11 @@ public class UserDetailServiceImpl implements UserDetailsService {
 
     @Transactional(readOnly = true)
     public boolean existsUser(String username){
-        return !userRepository.findByUserName(username).isEmpty();
+        //Java8에서 isEmpty()가 없음.
+        User user = userRepository.findByUserName(username).orElse(null);
+        if(user!=null){
+            return true;
+        }
+        return false;
     }
 }

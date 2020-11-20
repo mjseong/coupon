@@ -1,5 +1,10 @@
 package com.assignment.coupon.controller;
 
+import com.assignment.coupon.domain.entity.Coupon;
+import com.assignment.coupon.domain.state.EnumCouponState;
+import com.assignment.coupon.exception.ErrorResponse;
+import com.assignment.coupon.domain.dto.CouponCountDto;
+import com.assignment.coupon.domain.dto.CouponDto;
 import com.assignment.coupon.domain.dto.IssueDto;
 import com.assignment.coupon.service.CouponService;
 import org.springframework.http.HttpStatus;
@@ -21,21 +26,23 @@ public class CouponsController extends BaseController{
     }
 
     @PostMapping
+    @ResponseBody
     public ResponseEntity createCoupons(@RequestBody IssueDto issueDto){
 
-        couponService.createCoupon(issueDto.getCount(), null);
+        CouponCountDto couponCountDto= couponService.createCoupon(issueDto.getCount(), null);
 
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity(couponCountDto,HttpStatus.OK);
     }
 
-    @PutMapping(value = "/{couponCode}/users/{userId}/assign")
+    @PutMapping(value = "/{couponCode}/users/{userName}/assign")
     public ResponseEntity putAssignCoupons(@AuthenticationPrincipal Jwt jwt,
                                            @PathVariable("couponCode")String couponCode,
-                                           @PathVariable("userId")String userId){
+                                           @PathVariable("userName")String userName){
 
         List<String> authorities = jwt.getClaim("authorities");
+        CouponDto dto = couponService.assignCoupon(couponCode, userName);
 
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity(dto, HttpStatus.OK);
     }
 
     @PutMapping(value = "/bulk-assign")
@@ -43,41 +50,58 @@ public class CouponsController extends BaseController{
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    @PutMapping(value = "/{couponCode}/users/{userId}/use")
+    @PutMapping(value = "/{couponCode}/users/{userName}/use")
     public ResponseEntity putUseCoupons(@AuthenticationPrincipal Jwt jwt,
                                         @PathVariable("couponCode")String couponCode,
-                                        @PathVariable("userId")String userId){
+                                        @PathVariable("userName")String userName){
 
-        List<String> authorities = jwt.getClaim("authorities");
-
-        //admin 계정이면, userId = request userId 사용
-        if(!hasRoleAdmin(jwt.getSubject(), userId, authorities)){
-            //admin이 아니면 userId = token sub 사용
-            userId = jwt.getSubject();
-        }
+        couponService.useCoupon(couponCode, userName);
 
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    @PutMapping(value = "/{couponCode}/users/{userId}/cancel")
+    @PutMapping(value = "/{couponCode}/users/{userName}/cancel")
     public ResponseEntity putCancelCoupons(@AuthenticationPrincipal Jwt jwt,
                                            @PathVariable("couponCode")String couponCode,
-                                           @PathVariable("userId")String userId){
+                                           @PathVariable("userName")String userName){
 
-        List<String> authorities = jwt.getClaim("authorities");
+        couponService.cancelCoupon(couponCode, userName);
 
-        //admin 계정이면, userId = request userId 사용
-        if(!hasRoleAdmin(jwt.getSubject(), userId, authorities)){
-            // userId = token sub 사용
-            userId = jwt.getSubject();
-        }
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @PutMapping(value = "/{couponCode}/use")
+    public ResponseEntity putUseCouponsByUser(@AuthenticationPrincipal Jwt jwt,
+                                        @PathVariable("couponCode")String couponCode){
+
+        //사용자 인증 토큰으로 사용자 이름 갖고옴
+        String userName = jwt.getSubject();
+        couponService.useCoupon(couponCode, userName);
+
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @PutMapping(value = "/{couponCode}/cancel")
+    public ResponseEntity putCancelCouponsByUser(@AuthenticationPrincipal Jwt jwt,
+                                           @PathVariable("couponCode")String couponCode){
+
+        //사용자 인증 토큰으로 사용자 이름 갖고옴
+        String userName = jwt.getSubject();
+
+        couponService.cancelCoupon(couponCode, userName);
 
         return new ResponseEntity(HttpStatus.OK);
     }
 
     @GetMapping(value = "/{couponCode}")
-    public ResponseEntity getUsedCoupons(){
-        return new ResponseEntity(HttpStatus.OK);
+    public ResponseEntity getUsedCoupons(@AuthenticationPrincipal Jwt jwt,
+                                         @PathVariable("couponCode")String couponCode){
+
+        //사용자 인증 토큰으로 사용자 이름 갖고옴
+        String userName = jwt.getSubject();
+
+        List<CouponDto> coupons = couponService.findCouponsByUserId(userName);
+        return new ResponseEntity(coupons, HttpStatus.OK);
     }
 
 

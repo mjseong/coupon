@@ -1,8 +1,10 @@
 package com.assignment.coupon.service.impl;
 
+import com.assignment.coupon.domain.dto.CouponCountDto;
 import com.assignment.coupon.domain.dto.CouponDto;
 import com.assignment.coupon.domain.entity.Coupon;
 import com.assignment.coupon.domain.state.EnumCouponState;
+import com.assignment.coupon.exception.CouponServiceException;
 import com.assignment.coupon.repository.CouponRepository;
 import com.assignment.coupon.service.CouponService;
 import org.springframework.stereotype.Service;
@@ -28,33 +30,31 @@ public class CouponsServiceImpl implements CouponService {
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
-    public List<Coupon> createCoupon(long count, Instant expDate) {
+    public CouponCountDto createCoupon(long count, Instant expDate){
 
         List<Coupon> coupons = Stream.generate(()->Coupon.newCoupon("ubot_corp", expDate))
                                                         .limit(count)
                                                         .collect(Collectors.toList());
 
-        couponRepository.saveAll(coupons);
+        long saveCount = couponRepository.saveAll(coupons).size();
 
-        return coupons;
-
-//        return Stream
-//               .generate(()->couponRepository.save(Coupon.newCoupon("ubot_corp", expDate)))
-//               .limit(count)
-//                .collect(Collectors.toList());
+        if(saveCount!=count){
+            throw new CouponServiceException("Issue fail count : " + count);
+        }
+        return new CouponCountDto(coupons.size());
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
-    public String assignCoupon(String couponCode, String userId) {
+    public CouponDto assignCoupon(String couponCode, String userId) {
 
-        Coupon coupon = couponRepository.findCouponByIdAndUserIdIsNullAndState(couponCode, EnumCouponState.ISSUE.getState())
+        Coupon coupon = couponRepository.findCouponByCouponCodeAndUserIdIsNullAndState(couponCode, EnumCouponState.ISSUE.getState())
                                         .orElseThrow(NoSuchElementException::new);
 
         coupon.setUserId(userId);
         coupon.setState(EnumCouponState.ASSIGN.getState());
 
-        return coupon.getCouponCode();
+        return new CouponDto(coupon.getCouponCode(), coupon.getIssuer(), coupon.getCreateDate(), coupon.getExpireDate());
     }
 
     @Override
@@ -69,17 +69,28 @@ public class CouponsServiceImpl implements CouponService {
     @Override
     public List<CouponDto> findCouponsByUserId(String userId) {
         return couponRepository.findCouponsByUserIdAndState(userId, EnumCouponState.ASSIGN.getState())
-                        .stream()
-                        .map(p->new CouponDto(p.getCouponCode(), p.getIssuer(), p.getCreateDate(), p.getExpireDate()))
-                        .collect(Collectors.toList());
+                                    .stream()
+                                    .map(p->new CouponDto(p.getCouponCode(), p.getIssuer(), p.getCreateDate(), p.getExpireDate()))
+                                    .collect(Collectors.toList());
     }
+
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
+    @Override
+    public Coupon findByCouponCodeAndStateAndUserNotNull(String couponCode, String state) {
+
+        Coupon coupon = couponRepository.findByCouponCode(couponCode)
+                                    .filter(f->f.getState().equals(state) && f.getUserId()!=null)
+                                    .orElseThrow(()->new NoSuchElementException("not found couponCode: "+couponCode));
+        return coupon;
+    }
+
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
-    public CouponDto useCoupon(String couponCode) {
+    public CouponDto useCoupon(String couponCode, String userId) {
         Coupon coupon = couponRepository.findByCouponCode(couponCode)
-                                    .filter(f->f.getState().equals(EnumCouponState.ASSIGN.getState()) && f.getUserId()!=null)
-                                    .orElseThrow(NoSuchElementException::new);
+                                    .filter(f->f.getState().equals(EnumCouponState.ASSIGN.getState()) && f.getUserId()!=null&& f.getUserId().equals(userId))
+                                    .orElseThrow(()->new NoSuchElementException("your couponCode not found or not assign: "+couponCode));
 
         coupon.setState(EnumCouponState.USE.getState());
 
@@ -88,13 +99,20 @@ public class CouponsServiceImpl implements CouponService {
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
-    public CouponDto cancelCoupon(String couponCode) {
+    public CouponDto cancelCoupon(String couponCode, String userId) {
         Coupon coupon = couponRepository.findByCouponCode(couponCode)
-                .filter(f->f.getState().equals(EnumCouponState.USE.getState()) && f.getUserId()!=null)
-                .orElseThrow(NoSuchElementException::new);
+                                    .filter(f->f.getState().equals(EnumCouponState.USE.getState()) && f.getUserId()!=null && f.getUserId().equals(userId))
+                                    .orElseThrow(()->new NoSuchElementException("your couponCode not found or not assign:"+couponCode));
 
         coupon.setState(EnumCouponState.CANCEL.getState());
 
         return new CouponDto(coupon.getCouponCode(), coupon.getIssuer(), coupon.getCreateDate(), coupon.getExpireDate());
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @Override
+    public Coupon updateCouponState(Coupon coupon, String state) {
+        coupon.setState(state);
+        return couponRepository.save(coupon);
     }
 }

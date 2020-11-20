@@ -7,7 +7,6 @@ import org.springframework.data.annotation.CreatedDate;
 import javax.persistence.*;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.TemporalAmount;
 import java.util.UUID;
 
 @Entity
@@ -16,14 +15,15 @@ import java.util.UUID;
         indexes = {@Index(name="idx_coupon_info_01", columnList = "coupon_edate")})
 @SequenceGenerator(name = "COUPON_SEQ_GEN",
                     sequenceName = "COUPON_SEQ",
-                    initialValue = 1,
-                    allocationSize = 100)
+                    allocationSize = 100
+)
 public class Coupon{
 
     public Coupon() {}
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "COUPON_SEQ_GEN")
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "coupon_id")
     private long id;
 

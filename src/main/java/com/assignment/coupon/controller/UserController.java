@@ -3,7 +3,7 @@ package com.assignment.coupon.controller;
 
 import com.assignment.coupon.domain.dto.UserDto;
 import com.assignment.coupon.domain.entity.User;
-import com.assignment.coupon.service.impl.UserDetailServiceImpl;
+import com.assignment.coupon.service.impl.CustomUserDetailService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -17,17 +17,17 @@ import javax.validation.Valid;
 @RestController
 public class UserController {
 
-    private final UserDetailServiceImpl userDetailServiceImpl;
+    private final CustomUserDetailService customUserDetailService;
 
-    public UserController(UserDetailServiceImpl userDetailServiceImpl){
-        this.userDetailServiceImpl = userDetailServiceImpl;
+    public UserController(CustomUserDetailService customUserDetailService){
+        this.customUserDetailService = customUserDetailService;
     }
 
     @PostMapping(value = "/signup")
     @ResponseBody
     public ResponseEntity signUp(@RequestBody @Valid UserDto userDto){
 
-        User user = userDetailServiceImpl.createUser(userDto.getUserName(),
+        User user = customUserDetailService.createUser(userDto.getUserName(),
                                                     userDto.getPassword(),
                                                     userDto.getAdminRole());
 

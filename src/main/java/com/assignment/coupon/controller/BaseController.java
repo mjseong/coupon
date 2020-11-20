@@ -2,7 +2,7 @@ package com.assignment.coupon.controller;
 
 import java.util.List;
 
-public abstract class BaseController {
+public abstract class BaseController<T> {
 
     protected boolean hasRoleAdmin(String tokenUserId, String reqUserId, List<String> authorities){
 

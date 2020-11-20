@@ -11,7 +11,7 @@ public class UserDto {
 
     @NotBlank
     @Size(max = 32)
-    @Pattern(regexp = "^[\\w]*$")
+    @Pattern(regexp = "^[\\w||-]*$")
     private String userName;
 
     @NotBlank
