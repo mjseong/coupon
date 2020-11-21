@@ -2,9 +2,8 @@ package com.assignment.coupon;
 
 import com.assignment.coupon.domain.entity.Coupon;
 import com.assignment.coupon.repository.CouponRepository;
-import com.assignment.coupon.service.CouponService;
 import com.assignment.coupon.service.impl.CustomUserDetailService;
-import com.fasterxml.jackson.core.JsonProcessingException;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;
@@ -21,10 +20,12 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import javax.transaction.Transactional;
 import java.security.SecureRandom;
-import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -36,7 +37,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-//@Transactional
 public class ConponIntegrationTests {
 
 
@@ -138,15 +138,32 @@ public class ConponIntegrationTests {
     }
 
     @Test
-    @Order(5)
+    @Order(4)
     void tokenPassTest() throws Exception {
 
-        MvcResult couponResult = this.mockMvc.perform(get("/authtoken-test")
+        this.mockMvc.perform(get("/authtoken-test")
                 .header("Authorization", "bearer "+this.accessToken)
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
-                .andReturn();
+                .andDo(print());
+
+    }
+
+    @Test
+    @Order(5)
+    void badParamTest() throws Exception {
+
+        this.mockMvc.perform(get("/authtoken-test")
+                .header("Authorization", "bearer "+this.accessToken)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .param("userName","<script>a=b</script>")
+                .param("couponCode","adada-acaaab-aaa-daaa1213-aaad; select * from dual")
+                .param("createDate", "1999-102-111"))
+                .andExpect(status().isBadRequest())
+                .andDo(print());
+
     }
 
     //coupon create; post /api/coupons
@@ -158,6 +175,7 @@ public class ConponIntegrationTests {
      * @throws Exception
      */
 
+    @Transactional
     @Test
     @Order(6)
     void createCouponTest() throws Exception {
@@ -267,20 +285,30 @@ public class ConponIntegrationTests {
      * input param : date
      * used coupon-list : get  /api/coupons/expired-coupon
      */
-    @Disabled
+//    @Disabled
     @Test
     @Order(200)
     void findTodayExpireCuoponTest() throws Exception {
 
-        String datePlusOne = String.valueOf(Instant.now().plus(Duration.ofDays(1)).truncatedTo(ChronoUnit.DAYS));
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                                                                .withLocale(Locale.KOREA)
+                                                                .withZone(ZoneId.systemDefault());
+
+        String datePlusOne = dateTimeFormatter.format(Instant.now().truncatedTo(ChronoUnit.DAYS));
 
         MvcResult couponResult = this.mockMvc.perform(get("/api/coupons/expired-coupon")
+                .header("Authorization", "bearer "+this.accessToken)
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .param("createDate", datePlusOne))
+                .param("searchDate", datePlusOne)
+                .param("page", "1") // page 0~n
+                .param("size", "100")) // size
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andReturn();
+
+        String json = couponResult.getResponse().getContentAsString();
+        logger.info(json);
     }
 
     /**

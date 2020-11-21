@@ -12,7 +12,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "coupon_info",
         uniqueConstraints = {@UniqueConstraint(name = "idx_uniq_coupon_info_01", columnNames = {"coupon_code"})},
-        indexes = {@Index(name="idx_coupon_info_01", columnList = "coupon_edate")})
+        indexes = {@Index(name="idx_coupon_info_01", columnList = "coupon_edate,coupon_state"),
+                @Index(name="idx_coupon_info_02", columnList = "coupon_cdate,coupon_state")})
 @SequenceGenerator(name = "COUPON_SEQ_GEN",
                     sequenceName = "COUPON_SEQ",
                     allocationSize = 100

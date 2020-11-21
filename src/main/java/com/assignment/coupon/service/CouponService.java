@@ -3,6 +3,7 @@ package com.assignment.coupon.service;
 import com.assignment.coupon.domain.dto.CouponCountDto;
 import com.assignment.coupon.domain.dto.CouponDto;
 import com.assignment.coupon.domain.entity.Coupon;
+import org.springframework.data.domain.Pageable;
 
 import java.time.Instant;
 import java.util.List;
@@ -23,11 +24,11 @@ public interface CouponService {
 
     public List<Coupon> updateALLCoupon(List<Coupon> coupons);
 
-    public Coupon findByCouponCodeAndStateAndUserNotNull(String couponCode, String state);
+    public CouponDto findByCouponCodeAndStateAndUserNotNull(String couponCode, String state);
 
     public List<CouponDto> findCouponsByUserId(String userId);
 
-    public List<CouponDto> findCouponsByCreateTodayAndExipiredState(Instant today);
+    public List<CouponDto> findCouponsByCreateTodayAndExipiredState(Instant today, Pageable pageable);
 
     public List<Coupon> findCouponsByExpireDateBetweenAndState(Instant fromExpireDate, Instant toExpireDate, String state);
 

@@ -8,6 +8,7 @@ import com.assignment.coupon.exception.CouponServiceException;
 import com.assignment.coupon.repository.CouponRepository;
 import com.assignment.coupon.service.CouponService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -58,7 +59,12 @@ public class CouponsServiceImpl implements CouponService {
         coupon.setUserId(userId);
         coupon.setState(EnumCouponState.ASSIGN.getState());
 
-        return new CouponDto(coupon.getCouponCode(), coupon.getIssuer(), coupon.getCreateDate(), coupon.getExpireDate());
+        return new CouponDto(coupon.getCouponCode(),
+                                coupon.getIssuer(),
+                                coupon.getState(),
+                                coupon.getUserId(),
+                                coupon.getCreateDate(),
+                                coupon.getExpireDate());
     }
 
     @Override
@@ -74,16 +80,26 @@ public class CouponsServiceImpl implements CouponService {
     @Override
     public List<CouponDto> findCouponsByUserId(String userId) {
         return couponRepository.findCouponsByUserIdAndState(userId, EnumCouponState.ASSIGN.getState()).stream()
-                                    .map(p->new CouponDto(p.getCouponCode(), p.getIssuer(), p.getCreateDate(), p.getExpireDate()))
+                .map(p->new CouponDto(p.getCouponCode(),
+                                        p.getIssuer(),
+                                        p.getState(),
+                                        p.getUserId(),
+                                        p.getCreateDate(),
+                                        p.getExpireDate()))
                                     .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
     @Override
-    public List<CouponDto> findCouponsByCreateTodayAndExipiredState(Instant toDay) {
+    public List<CouponDto> findCouponsByCreateTodayAndExipiredState(Instant toDay, Pageable pageable) {
         Instant toCreateDate = toDay.plus(Duration.ofDays(1));
-        return couponRepository.findCouponsByCreateDateBetweenAndState(toDay,toCreateDate,EnumCouponState.EXPIRE.getState()).stream()
-                .map(p->new CouponDto(p.getCouponCode(), p.getIssuer(), p.getCreateDate(), p.getExpireDate()))
+        return couponRepository.findCouponsByCreateDateBetweenAndState(toDay,toCreateDate,EnumCouponState.EXPIRE.getState(), pageable).stream()
+                .map(p->new CouponDto(p.getCouponCode(),
+                                        p.getIssuer(),
+                                        p.getState(),
+                                        p.getUserId(),
+                                        p.getCreateDate(),
+                                        p.getExpireDate()))
                 .collect(Collectors.toList());
     }
 
@@ -107,10 +123,11 @@ public class CouponsServiceImpl implements CouponService {
 
     @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
     @Override
-    public Coupon findByCouponCodeAndStateAndUserNotNull(String couponCode, String state) {
+    public CouponDto findByCouponCodeAndStateAndUserNotNull(String couponCode, String state) {
 
-        Coupon coupon = couponRepository.findByCouponCode(couponCode)
+        CouponDto coupon = couponRepository.findByCouponCode(couponCode)
                                     .filter(f->f.getState().equals(state) && f.getUserId()!=null)
+                                    .map(p->new CouponDto(p.getCouponCode(),p.getIssuer(), p.getState(), p.getUserId(), p.getCreateDate(),p.getExpireDate()))
                                     .orElseThrow(()->new NoSuchElementException("not found couponCode: "+couponCode));
         return coupon;
     }
@@ -125,7 +142,12 @@ public class CouponsServiceImpl implements CouponService {
 
         coupon.setState(EnumCouponState.USE.getState());
 
-        return new CouponDto(coupon.getCouponCode(), coupon.getIssuer(), coupon.getCreateDate(), coupon.getExpireDate());
+        return new CouponDto(coupon.getCouponCode(),
+                coupon.getIssuer(),
+                coupon.getState(),
+                coupon.getUserId(),
+                coupon.getCreateDate(),
+                coupon.getExpireDate());
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
@@ -137,7 +159,12 @@ public class CouponsServiceImpl implements CouponService {
 
         coupon.setState(EnumCouponState.CANCEL.getState());
 
-        return new CouponDto(coupon.getCouponCode(), coupon.getIssuer(), coupon.getCreateDate(), coupon.getExpireDate());
+        return new CouponDto(coupon.getCouponCode(),
+                                coupon.getIssuer(),
+                                coupon.getState(),
+                                coupon.getUserId(),
+                                coupon.getCreateDate(),
+                                coupon.getExpireDate());
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)

@@ -10,14 +10,18 @@ public class CouponDto {
 
     String couponCode;
     String issuer;
+    String userName;
+    String state;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     Instant createDate;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     Instant exprieDate;
 
-    public CouponDto(String couponCode, String issuer, Instant createDate, Instant exprieDate) {
+    public CouponDto(String couponCode, String issuer, String state, String userName, Instant createDate, Instant exprieDate) {
         this.couponCode = couponCode;
         this.issuer = issuer;
+        this.state = state;
+        this.userName = userName;
         this.createDate = createDate;
         this.exprieDate = exprieDate;
     }
@@ -52,5 +56,21 @@ public class CouponDto {
 
     public void setExprieDate(Instant exprieDate) {
         this.exprieDate = exprieDate;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
     }
 }

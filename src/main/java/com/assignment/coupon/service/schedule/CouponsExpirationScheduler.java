@@ -15,8 +15,8 @@ public class CouponsExpirationScheduler {
         this.asyncTaskService = asyncTaskService;
     }
 
-//    @Scheduled(cron = "0 0 0 * * *")
-    @Scheduled(cron = "0/30 * * * * *")
+    @Scheduled(cron = "0 0 0 * * *")
+//    @Scheduled(cron = "0/30 * * * * *")
     public void couponsExpiration(){
         log.info("Scheduler execute ");
         asyncTaskService.expireCoupons();

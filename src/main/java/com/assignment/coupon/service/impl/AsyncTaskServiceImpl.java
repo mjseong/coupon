@@ -12,6 +12,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,8 +26,9 @@ public class AsyncTaskServiceImpl implements AsyncTaskService {
     }
 
     @Async
-    public void expireCoupons(){
+    public CompletableFuture<Boolean> expireCoupons(){
 
+        CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
         Instant toExpDate = Instant.now().truncatedTo(ChronoUnit.DAYS);
         Instant formExpDate = toExpDate.minus(Duration.ofDays(3));
 
@@ -40,25 +42,35 @@ public class AsyncTaskServiceImpl implements AsyncTaskService {
 
         if(expirationCount!=coupons.size()){
             log.error("Coupons Filed to expire");
+            completableFuture.complete(false);
+            return completableFuture;
         }else{
             log.info(String.format("%d Coupons expired ",expirationCount));
+            completableFuture.complete(true);
+            return completableFuture;
         }
 
     }
 
     @Async
-    public void notice3DaysExpirationCoupons(){
+    public CompletableFuture<Long> notice3DaysExpirationCoupons(){
+
+        CompletableFuture<Long> completableFuture = new CompletableFuture<>();
+
         Instant formExpDate = Instant.now().plus(Duration.ofDays(3)).truncatedTo(ChronoUnit.DAYS);
         Instant toExpireDate = formExpDate.plus(Duration.ofDays(1));
 
         log.info(String.format("before3Day: %s ~ %s",formExpDate, toExpireDate));
 
         List<String> codes = couponService.findCouponsByExpireDateBetweenAndState(formExpDate, toExpireDate, EnumCouponState.ASSIGN.getState()).stream()
+                                        .parallel()
                                         .map(p->{
                                             return couponService.expireNotice(p.getCouponCode(), p.getUserId());
                                         }).collect(Collectors.toList());
 
         log.info(String.format("Notifications have been delivered to %d users", codes.size()));
+        completableFuture.complete((long) codes.size());
+        return completableFuture;
     }
 
 }
