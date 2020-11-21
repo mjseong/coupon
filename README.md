@@ -1,5 +1,38 @@
-# API Description
+# Coupon Service application
 
+
+## Environment
++ Spring Boot 2
++ Java 11
++ MySQL 5.7 or H2
++ JUnit5 
+
+## Development Strategy
+* 개발환경 분리
+
+
+## Build & Run
+* 실행 환경
+    * Application 실행에 영향받지 않게 local와 dev를 분리하였습니다.
+    * local은 H2 DB로 동작하게 하였으며, dev환경은 MySQL을 사용하도록 세팅하였습니다.
+    * 각 RDBMS에서 영향받지 않도록 ID 생성은 Hibernate Sequence전략을 사용하였습니다.
+    * local은 H2, dev는 Mysql으로 동작합니다.
+     
+1. MySQL 컨테이너 세팅
+   ```
+   docker run -d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=1234 --name mysql mysql/mysql-server:5.7.24-1.1.8
+
+2. Build & Run
+   ```
+   $ ./gradlew bootRun -DSpring.profile.active=local 또는 dev'
+   or
+   $ ./gradlew build 또는 bootJar
+   $ cd /git/coupon/build/libs/ java -jar coupon.jar -DSpring.profile.active=local 또는 dev 
+     
+## DB setting
+
+# API Description
+Rest API는 인증과 쿠폰으로 나눠 구현되어 있으며, 각표에 설명 및 필수 인자값 표시를 하였음.
 ## Auth API
 
 ##### - Require parameter *표시 
