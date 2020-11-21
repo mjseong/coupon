@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface CouponService {
 
-    public CouponCountDto createCoupon(long count, Instant expDate);
+    public List<Coupon>createCoupon(long count, Instant expDate);
 
     public CouponDto assignCoupon(String couponCode, String userId);
 

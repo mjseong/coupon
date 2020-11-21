@@ -2,6 +2,7 @@ package com.assignment.coupon;
 
 import com.assignment.coupon.domain.entity.Coupon;
 import com.assignment.coupon.repository.CouponRepository;
+import com.assignment.coupon.service.CouponService;
 import com.assignment.coupon.service.impl.CustomUserDetailService;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -45,6 +46,8 @@ public class ConponIntegrationTests {
     @Autowired
     MockMvc mockMvc;
     @Autowired
+    CouponService couponService;
+    @Autowired
     CouponRepository couponRepository;
     @Autowired
     CustomUserDetailService customUserDetailService;
@@ -71,7 +74,7 @@ public class ConponIntegrationTests {
             logger.debug(e.getMessage());
         }
 
-        this.dumyCouponCode = couponRepository.save(Coupon.newCoupon("ubot_corp",null)).getCouponCode();
+        this.dumyCouponCode = couponService.createCoupon(1, null).stream().findFirst().orElseThrow().getCouponCode();
 
     }
 
@@ -257,6 +260,20 @@ public class ConponIntegrationTests {
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+    }
+
+    @Test
+    @Order(101)
+    void useNotUseCouponTest() throws Exception {
+        String apiUrl = "/api/coupons/"+this.dumyCouponCode+"/users/"+this.testUserName+"/use";
+        MvcResult couponResult = this.mockMvc.perform(put(apiUrl)
+                .header("Authorization", "bearer "+this.adminAccessToken)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().is4xxClientError())
+                .andDo(print())
                 .andReturn();
     }
 
@@ -268,7 +285,7 @@ public class ConponIntegrationTests {
      */
 //    @Disabled
     @Test
-    @Order(101)
+    @Order(102)
     void cancelCouponTest() throws Exception {
 
         String apiUrl = "/api/coupons/"+this.dumyCouponCode+"/users/"+this.testUserName+"/cancel";
@@ -277,6 +294,7 @@ public class ConponIntegrationTests {
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
+                .andDo(print())
                 .andReturn();
     }
 

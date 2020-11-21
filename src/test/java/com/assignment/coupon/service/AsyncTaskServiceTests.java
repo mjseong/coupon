@@ -44,7 +44,7 @@ public class AsyncTaskServiceTests {
         long act = couponService.findCouponsByExpireDateBetweenAndState(from,to, EnumCouponState.EXPIRE.getState()).size();
         long expected = act;
 
-        expected += couponService.createCoupon(1000, Instant.now().minus(Duration.ofDays(1))).getCouponCount();
+        expected += couponService.createCoupon(10, Instant.now().minus(Duration.ofDays(1))).size();
 
         //TODO: @async test방법 찾다가 해결함. 시간날때 검토해야
         // Awaitility 사용하였음. + ref: https://stackoverflow.com/questions/57869463/testing-async-annotated-method-in-springboottest

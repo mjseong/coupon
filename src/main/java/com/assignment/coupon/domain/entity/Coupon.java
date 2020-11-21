@@ -47,7 +47,7 @@ public class Coupon{
     @Column(name = "coupon_edate")
     private Instant expireDate;
 
-    @Column(name = "coupon_udate")
+    @Column(name = "coupon_udate", columnDefinition="datetime DEFAULT CURRENT_TIMESTAMP")
     @UpdateTimestamp
     private Instant updateDate;
 
@@ -68,7 +68,7 @@ public class Coupon{
     public static class Builder {
         private String couponCode = UUID.randomUUID().toString();
         private Instant createDate = Instant.now();
-        private Instant updateDate = null;
+        private Instant updateDate = Instant.now();
         private Instant expireDate = Instant.now().plus(Duration.ofHours(24));
 
         private String userId;

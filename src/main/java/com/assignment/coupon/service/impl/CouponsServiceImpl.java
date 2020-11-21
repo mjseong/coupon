@@ -7,19 +7,18 @@ import com.assignment.coupon.domain.state.EnumCouponState;
 import com.assignment.coupon.exception.CouponServiceException;
 import com.assignment.coupon.repository.CouponRepository;
 import com.assignment.coupon.service.CouponService;
+import com.assignment.coupon.service.CouponHistService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StopWatch;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -28,25 +27,39 @@ import java.util.stream.Stream;
 public class CouponsServiceImpl implements CouponService {
 
     private final CouponRepository couponRepository;
+    private final CouponHistService couponHistService;
 
-    public CouponsServiceImpl(CouponRepository couponRepository){
+    public CouponsServiceImpl(CouponRepository couponRepository,
+                              CouponHistService couponHistService){
         this.couponRepository = couponRepository;
+        this.couponHistService = couponHistService;
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
-    public CouponCountDto createCoupon(long count, Instant expDate){
+    public List<Coupon> createCoupon(long count, Instant expDate){
 
+//        StopWatch stopWatch = new StopWatch();
         List<Coupon> coupons = Stream.generate(()->Coupon.newCoupon("ubot_corp", expDate))
+                                                        .parallel()
                                                         .limit(count)
                                                         .collect(Collectors.toList());
 
         long saveCount = couponRepository.saveAll(coupons).size();
 
+//        stopWatch.start();
+        long saveHistCount = couponHistService.bulkInsertLog(coupons,EnumCouponState.ISSUE);
+//        stopWatch.stop();
+//        log.info("couponHistService.bulkInsertLog : " + stopWatch.getTotalTimeSeconds());
+
+        if(saveHistCount==saveCount){
+            log.info("Issue history Insert complete");
+        }
+
         if(saveCount!=count){
             throw new CouponServiceException("Issue fail count : " + count);
         }
-        return new CouponCountDto(coupons.size());
+        return coupons;
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
@@ -58,6 +71,9 @@ public class CouponsServiceImpl implements CouponService {
 
         coupon.setUserId(userId);
         coupon.setState(EnumCouponState.ASSIGN.getState());
+
+        //log assign record
+        couponHistService.insertLog(coupon, EnumCouponState.ASSIGN);
 
         return new CouponDto(coupon.getCouponCode(),
                                 coupon.getIssuer(),
@@ -138,9 +154,12 @@ public class CouponsServiceImpl implements CouponService {
     public CouponDto useCoupon(String couponCode, String userId) {
         Coupon coupon = couponRepository.findByCouponCode(couponCode)
                                     .filter(f->f.getState().equals(EnumCouponState.ASSIGN.getState()) && f.getUserId()!=null&& f.getUserId().equals(userId))
-                                    .orElseThrow(()->new NoSuchElementException("your couponCode not found or not assign: "+couponCode));
+                                    .orElseThrow(()->new NoSuchElementException("your couponCode invalid or not assign: "+couponCode));
 
         coupon.setState(EnumCouponState.USE.getState());
+
+        //log use event record
+        couponHistService.insertLog(coupon, EnumCouponState.USE);
 
         return new CouponDto(coupon.getCouponCode(),
                 coupon.getIssuer(),
@@ -155,9 +174,12 @@ public class CouponsServiceImpl implements CouponService {
     public CouponDto cancelCoupon(String couponCode, String userId) {
         Coupon coupon = couponRepository.findByCouponCode(couponCode)
                                     .filter(f->f.getState().equals(EnumCouponState.USE.getState()) && f.getUserId()!=null && f.getUserId().equals(userId))
-                                    .orElseThrow(()->new NoSuchElementException("your couponCode not found or not assign:"+couponCode));
+                                    .orElseThrow(()->new NoSuchElementException("your couponCode not found or not used state:"+couponCode));
 
         coupon.setState(EnumCouponState.CANCEL.getState());
+
+        //log cancel event record
+        couponHistService.insertLog(coupon, EnumCouponState.CANCEL);
 
         return new CouponDto(coupon.getCouponCode(),
                                 coupon.getIssuer(),
