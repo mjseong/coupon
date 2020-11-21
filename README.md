@@ -1,4 +1,4 @@
-# Coupon Service application
+# Coupon Service Application
 RestAPI 기반의 쿠폰 서비스 웹어플리케이션 입니다.
 + 지원기능
    + 쿠폰생성
@@ -9,7 +9,7 @@ RestAPI 기반의 쿠폰 서비스 웹어플리케이션 입니다.
    + 만료예정(3일전)인 쿠폰 안내 메시지 발송(log.info로 출력으로 대체)
    + 사용자 가입과 로그인(JWT AccessToken 발급),API별 접근제한 기능 제공
 ## Environment
-+ Spring Boot 2 & Oauth2ResourceServer & Jwt(jsonwebtoken)
++ Spring Boot 2 & Spring Oauth2ResourceServer & Jwt(jsonwebtoken)
 + Java 11
 + MySQL 5.7 or H2
 + JUnit5 
