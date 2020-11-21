@@ -1,15 +1,15 @@
-#API Description
-
-##Auth API
-
+# API Description
+--------------------------------------------------------------
+## Auth API
+--------------------------------------------------------------
 ##### - Require parameter *표시 
 | NO | API NAME | HTTP<br>method|API PATH | API PARAM | DESC | 
 |---:|----------------------:|---:|----------------------:|------------------------:|--------------------:| 
 |1|가입| POST| /signup|username*<br>passwrod*<br> adminRole|adminRole=true일때<br> adminRole 부여
 |2|로그인| POST| /signin|username*<br> password*<br>| accessToken(JWT) 발급
 
-##Coupon API
-
+## Coupon API
+--------------------------------------------------------------
 ##### - Require parameter *표시
 ##### - Http Header Authorization Bearer Token 사용되는 API NAME에 (*)표시
 ##### - JWT Claim SCOPE(coupon:write,read)와 (coupon_admin:write,read)에 따라 API의 접근 제한이 있음.
