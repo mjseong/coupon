@@ -30,7 +30,7 @@
    $ cd /git/coupon/build/libs/ java -jar coupon.jar -DSpring.profile.active=local 또는 dev 
      
 ## DB setting
-*
+
     ````
   docker exec -it mysql bash
   $ mysql -u root -p
