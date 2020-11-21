@@ -48,7 +48,7 @@ Rest API는 인증과 쿠폰으로 나눠 구현되어 있으며, 각표에 설�
 | NO | API NAME | HTTP<br>method|API PATH | API PARAM | DESC | 
 |---:|----------------------:|---:|----------------------:|------------------------:|--------------------:| 
 |1|가입| POST| /signup|username*<br>passwrod*<br> adminRole|adminRole=true일때<br> adminRole 부여
-|2|로그인| POST| /signin|username*<br> password*<br>| accessToken(JWT) 발급
+|2|로그인| POST| /signin|username*<br> password*<br>| ResponseBody<br>accessToken(JWT)발급
 
 ## Coupon API
 
