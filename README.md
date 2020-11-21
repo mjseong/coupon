@@ -24,12 +24,22 @@
 
 2. Build & Run
    ```
-   $ ./gradlew bootRun -DSpring.profile.active=local 또는 dev'
+   $ ./gradlew bootRun -DSpring.profile.active=local 또는 dev
    or
    $ ./gradlew build 또는 bootJar
    $ cd /git/coupon/build/libs/ java -jar coupon.jar -DSpring.profile.active=local 또는 dev 
      
 ## DB setting
+*
+    ````
+  docker exec -it mysql bash
+  $ mysql -u root -p
+  password: 1234
+   
+  mysql> CREATE DATABASE coupon;
+  mysql> GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '1234';
+  mysql> FLUSH PRIVILEGES;
+
 
 # API Description
 Rest API는 인증과 쿠폰으로 나눠 구현되어 있으며, 각표에 설명 및 필수 인자값 표시를 하였음.
