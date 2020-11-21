@@ -3,6 +3,7 @@ package com.assignment.coupon.service.impl;
 import com.assignment.coupon.domain.entity.Coupon;
 import com.assignment.coupon.domain.state.EnumCouponState;
 import com.assignment.coupon.service.AsyncTaskService;
+import com.assignment.coupon.service.CouponHistService;
 import com.assignment.coupon.service.CouponService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -20,9 +21,11 @@ import java.util.stream.Collectors;
 public class AsyncTaskServiceImpl implements AsyncTaskService {
 
     private final CouponService couponService;
+    private final CouponHistService couponHistService;
 
-    public AsyncTaskServiceImpl(CouponService couponService){
+    public AsyncTaskServiceImpl(CouponService couponService, CouponHistService couponHistService){
         this.couponService = couponService;
+        this.couponHistService = couponHistService;
     }
 
     @Async
@@ -39,6 +42,7 @@ public class AsyncTaskServiceImpl implements AsyncTaskService {
                                             .collect(Collectors.toList());
         coupons.forEach(coupon -> coupon.setState(EnumCouponState.EXPIRE.getState()));
         int expirationCount = couponService.updateALLCoupon(coupons).size();
+        couponHistService.bulkInsertLog(coupons,EnumCouponState.EXPIRE);
 
         if(expirationCount!=coupons.size()){
             log.error("Coupons Filed to expire");

@@ -19,7 +19,7 @@ spring:
       idle-timeout: 30000
   jpa:
     generate-ddl: true
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         jdbc:

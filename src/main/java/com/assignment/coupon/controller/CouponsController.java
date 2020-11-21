@@ -3,6 +3,7 @@ package com.assignment.coupon.controller;
 import com.assignment.coupon.domain.dto.CouponCountDto;
 import com.assignment.coupon.domain.dto.CouponDto;
 import com.assignment.coupon.domain.dto.IssueDto;
+import com.assignment.coupon.domain.entity.Coupon;
 import com.assignment.coupon.domain.state.EnumCouponState;
 import com.assignment.coupon.service.CouponService;
 import org.springframework.data.domain.Pageable;
@@ -39,9 +40,18 @@ public class CouponsController extends BaseController{
     @ResponseBody
     public ResponseEntity createCoupons(@RequestBody IssueDto issueDto){
 
-        CouponCountDto couponCountDto= couponService.createCoupon(issueDto.getCount(), null);
+        Instant expireDate = null;
 
-        return new ResponseEntity(couponCountDto,HttpStatus.OK);
+        if(issueDto.getExpireDate()!=null && !issueDto.getExpireDate().equals("")){
+            LocalDate date = LocalDate.parse(issueDto.getExpireDate());
+            expireDate = date.atStartOfDay(ZoneId.systemDefault())
+                    .toInstant().plus(Duration.ofDays(1))
+                    .truncatedTo(ChronoUnit.DAYS);
+        }
+
+        List<Coupon> coupons = couponService.createCoupon(issueDto.getCount(), expireDate);
+
+        return new ResponseEntity(new CouponCountDto(coupons.size()),HttpStatus.OK);
     }
 
     @PutMapping(value = "/{couponCode}/users/{userName}/assign")
