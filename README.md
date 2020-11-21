@@ -1,6 +1,13 @@
 # Coupon Service application
-
-
+RestAPI 기반의 쿠폰 서비스 웹어플리케이션 입니다.
++ 지원기능
+   + 쿠폰생성
+   + 사용자에게 쿠폰지급
+   + 쿠폰검색/조회
+   + 쿠폰사용/취소
+   + 일자 별 만료된 쿠폰 조회
+   + 만료예정(3일전)인 쿠폰 안내 메시지 발송(log.info로 출력으로 대체)
+   + 사용자 가입과 로그인(JWT AccessToken 발급),API별 접근제한 기능 제공
 ## Environment
 + Spring Boot 2 & Oauth2ResourceServer & Jwt(jsonwebtoken)
 + Java 11
@@ -15,19 +22,20 @@
     * jwt claim의 scope를 기록하여 일반 사용자와 관리자 사용자 검증할 수 있게 하였고, 이 토큰을 통해 coupon resource서버가 (발급,조회,사용,취소)접근 권한을
     제어합니다. 
 * Blocking API 기반으로 개발
-    * SpringBoot-web을 기반으로 개발되어 Blocking Api로 동작하며, Blocking JDBC driver를 이용했기 때문에 완전한 비동기 api동작은 하지 않습니다.<br>
+   * SpringBoot-web을 기반으로 개발되어 Blocking Api로 동작하며, Blocking JDBC driver를 이용했기 때문에 완전한 비동기 api동작은 하지 않습니다.<br>
     비동기 api서버 기반으로 개발하려면 Spring webflux 기반으로 개발해야하기 때문에 단기간 개발에 익숙한 web으로 개발하였습니다.
-    * 스케줄링 및 쿠폰 만료 알림 기능은 비동기 기능을 활성화 하여 기본 API에 영향 없도록 하였습니다.<br>
+   * 스케줄링 및 쿠폰 만료 알림 기능은 비동기 기능을 활성화 하여 기본 API에 영향 없도록 하였습니다.<br>
      scale out시 고려할 사항은 스케줄링을 off하고 별도로 스케줄링을 실행해야 합니다. 해당 동작은 서비스 api와 batch job을 분리해서 실행되어야만, 동시성 문제가 발생하지 않습니다.
-     다른 방법은 MessageQueue(Kafka또는RabbitMQ)가 broker가 되고 Blocking API서버를 worker로 동작하도록 하여 Broker가 제공해주는 데이터만 분산처리하는 방법을 고려할 수 있습니다.   
-* 쿠폰 번호는 UUID를 사용하여 유일성을 보장하였습니다. scale out시에도 uuid를 이용한 쿠폰코드는 충돌 가능성이 적습니다.
-Java UUID secureRadom 이슈(blocking, hang)는 현재 bugfix 되어 성능에 문제가 없는것으로 조사하였습니다. 
-* 쿠폰 만료기간을 설정할 수 있게 하였으며, default 7일로 설정 하였습니다.
-매일 00시 00분에 스케줄러가 실행하여 만료일 기준으로 쿠폰을 만료시기며, 추가 기능으로 만료일 3일 이전에 지급받은 사용자에게 알림을 주도록 구현하였습니다.
+   * 다른 방법은 MessageQueue(Kafka또는RabbitMQ)가 broker가 되고 Blocking API서버를 worker로 동작하도록 하여 Broker가 제공해주는 데이터만 분산처리하는 방법을 고려할 수 있습니다.   
+* 쿠폰코드 및 관리방안
+   * 쿠폰 번호는 UUID를 사용하여 유일성을 보장하였습니다. scale out시에도 uuid를 이용한 쿠폰코드는 충돌 가능성이 적습니다.
+   * Java UUID secureRadom 이슈(blocking, hang)는 현재 bugfix되어 성능에 문제가 없는것으로 조사하였습니다. 
+   * 쿠폰은 만료기간을 설정할 수 있게 하였으며, 만료일 지정 없을시 기본 발급일 기준 7일이후로 설정 하였습니다.
+   * 매일 00시 00분에 스케줄러가 실행하여 만료일 기준으로 쿠폰을 만료시기며, 추가 기능으로 만료일 3일 이전에 지급받은 사용자에게 알림을 주도록 구현하였습니다.
 * EventSourcing과 CQRS 고민    
-    * 현재 구현체는 조회 결과는 coupon_info schema에 상태변경이 일어나는 과정에 조회될 수 있습니다.
+    * 현재 구현체는 조회 결과는 Info schema(coupon_info)에 상태변경이 일어나는 과정에 조회될 수 있습니다.
     따라서 event-sourcing과 CQRS를 구현하기 위한 기반으로 이벤트기반 쿠폰이력 저장기능을 추가하였습니다.   
-    * 쿠폰코드 마다 (발급, 지급, 사용, 취소, 만료)이벤트와 (발급상태, 지급상태, 사용상태, 만료상태)상태정보를 저장할 수 있는 LOG schema(coupon_hist)를 구현하였습니다.
+    * 쿠폰코드 마다 (발급, 지급, 사용, 취소, 만료)이벤트와 (발급상태, 지급상태, 사용상태, 만료상태)상태정보를 저장할 수 있는 Log schema(coupon_hist)를 구현하였습니다.
     아직 과제 구현상 DB클러스링 및 master, slave 환경을 구축하지 못해 CQRS구현은 하지 못했습니다. 
 
 ## Build & Run
@@ -64,6 +72,7 @@ Rest API는 인증과 쿠폰으로 나눠 구현되어 있으며, 각표에 설�
 ## Auth API
 
 ##### - Require parameter *표시 
+##### - accessToken 만료일 30분 설정됨
 | NO | API NAME | HTTP<br>method|API PATH | API PARAM | DESC | 
 |---:|----------------------:|---:|----------------------:|------------------------:|--------------------:| 
 |1|가입| POST| /signup|username*<br>passwrod*<br> adminRole|adminRole=true일때<br> adminRole 부여
