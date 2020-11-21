@@ -184,6 +184,7 @@ public class ConponIntegrationTests {
     void createCouponTest() throws Exception {
         Map<String, Object> map = new HashMap();
         map.put("count", 10);
+//        map.put("expireDate", "2020-11-30");
 
         String jsonBody = this.mapper.writeValueAsString(map);
 

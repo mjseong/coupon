@@ -40,7 +40,16 @@ public class CouponsController extends BaseController{
     @ResponseBody
     public ResponseEntity createCoupons(@RequestBody IssueDto issueDto){
 
-        List<Coupon> coupons = couponService.createCoupon(issueDto.getCount(), null);
+        Instant expireDate = null;
+
+        if(issueDto.getExpireDate()!=null && !issueDto.getExpireDate().equals("")){
+            LocalDate date = LocalDate.parse(issueDto.getExpireDate());
+            expireDate = date.atStartOfDay(ZoneId.systemDefault())
+                    .toInstant().plus(Duration.ofDays(1))
+                    .truncatedTo(ChronoUnit.DAYS);
+        }
+
+        List<Coupon> coupons = couponService.createCoupon(issueDto.getCount(), expireDate);
 
         return new ResponseEntity(new CouponCountDto(coupons.size()),HttpStatus.OK);
     }

@@ -69,7 +69,7 @@ public class Coupon{
         private String couponCode = UUID.randomUUID().toString();
         private Instant createDate = Instant.now();
         private Instant updateDate = Instant.now();
-        private Instant expireDate = Instant.now().plus(Duration.ofHours(24));
+        private Instant expireDate = Instant.now().plus(Duration.ofDays(7));
 
         private String userId;
         private String issuer;
