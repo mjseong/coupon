@@ -10,7 +10,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
 
-@Profile({"dev","sche"})
+@Profile({"local","dev","sche"})
 @Configuration
 @EnableScheduling
 public class SchedulerConfig implements SchedulingConfigurer {
