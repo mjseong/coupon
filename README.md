@@ -77,7 +77,7 @@ Rest API는 인증과 쿠폰으로 나눠 구현되어 있으며, 각표에 설�
 ##### - accessToken 만료일 30분 설정됨
 | NO | API NAME | HTTP<br>method|API PATH | API PARAM | DESC | 
 |---:|----------------------:|---:|----------------------:|------------------------:|--------------------:| 
-|1|가입| POST| /signup|username*<br>passwrod*<br> adminRole|adminRole=true일때<br> adminRole 부여
+|1|가입| POST| /signup|username*<br>password*<br> adminRole|adminRole=true일때<br> adminRole 부여
 |2|로그인| POST| /signin|username*<br> password*<br>| ResponseBody<br>accessToken(JWT)발급
 
 ### Coupon API
@@ -96,7 +96,14 @@ Rest API는 인증과 쿠폰으로 나눠 구현되어 있으며, 각표에 설�
 |7|당일 만료된<br>쿠폰목록조회(*)|GET|/api/coupons/expired-coupon| searchDate*<br> page<br>size| coupon:write<br>searchDate<br>ex)2020-11-20|
 
 ## Future Work
-* 성능테스트
-   * 성능 테스트툴로 검증을 해보지 못했지만, 내부 테스트 코드로 실행결과, 10만건의 쿠폰발행정보와 event정보 2가지를 각각 insert한 단일 실행결과가 약 10sec~12sec 소요되었습니다.
-* 100억개 쿠폰관리 구현
-   *  RDBMS성능에 따라 구현관점이 다른대, 구현된 MySQL에서는 쿠폰정보 테이블의 shading을 해야하며, Oracel,Postgresql과 같이 클러스터 테이블기능을 지원하는 DB
+- 성능테스트
+   * 성능 테스트툴로 검증을 해보지 못했지만, 테스트 코드를 이용해 10만건의 쿠폰발행정보와 event정보 2가지를 insert한 실행결과, 약 10sec~12sec 소요되었습니다.
+   * scale out상황에서 API호출 성능 테스트는 진행하지 못하였습니다. 추후 Docker기반 컨테이너로 실행하여 단일과 scale out상황에서 RDBMS와 연관성 그리고 처리량을 측정해야 겠습니다.
+- 100억개 쿠폰코드를 관리하기 위해서는 DB sharding을 고려해야 합니다.
+   * 쿠폰코드 위주의 검색과 만료일 위주의 검색으로 나눌 수 있는대, 과거 데이터 검색과 쿠폰 만료처리, 쿠폰 만료알림과 같이 날짜 검색후 기능이 동작하기 위해서는 RangeBased기반의 샤딩이 유리해보입니다. 만료일 기반으로 나눈다면, 분포도가 만료일이에 따라 균등하지 못할 수 있습니다. 따라서 분할 기준 월,분기,년 단위에서 조절이 필요할 것 같습니다.
+   * 쿠폰코드를 이용한 HashBaed 샤딩일 경우 쿠폰코드 기반 검색과 데이터 분포에는 유리하지만, 만료일과 같은 날짜 검색에는 모든 DB를 검색할 수 있어 쿠폰 만료처리, 쿠폰 만료알림과 같은 Batch job에 불리할 수 있습니다. 또한 확장이 Rangebased 샤딩보다 어려워 관리가 어렵다고 판단됩니다.
+   * RangeBased기반 샤딩에서 검색성능의 최적화를 위해 exprieDate을 검색조건으로 사용해야 합니다. 현재 쿠폰코드를 uuid로만 구현했기 때문에 exprieDate에 대한 정보를 포함해야 합니다. 추후에 쿠폰코드 생성기를 만들어 적용해야할 것 같습니다.
+   
+   
+   
+      
