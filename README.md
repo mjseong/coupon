@@ -25,7 +25,8 @@ RestAPI 기반의 쿠폰 서비스 웹어플리케이션 입니다.
    * SpringBoot-web을 기반으로 개발되어 Blocking Api로 동작하며, Blocking JDBC driver를 이용했기 때문에 완전한 비동기 api동작은 하지 않습니다.<br>
     비동기 api서버 기반으로 개발하려면 Spring webflux 기반으로 개발해야하기 때문에 단기간 개발에 익숙한 web으로 개발하였습니다.
    * 스케줄링 및 쿠폰 만료 알림 기능은 비동기 기능을 활성화 하여 기본 API에 영향 없도록 하였습니다.<br>
-     scale out시 고려할 사항은 스케줄링을 off하고 별도로 스케줄링을 실행해야 합니다. 해당 동작은 서비스 api와 batch job을 분리해서 실행되어야만, 동시성 문제가 발생하지 않습니다.
+   * scale out시 고려할 사항은 스케줄링을 off하고 별도로 스케줄링을 실행해야 합니다. 해당 동작은 서비스 api와 batch job을 분리해서 실행되어야만, 동시성 문제가 발생하지 않습니다.<br>
+   따라서 이 어플리케이션은 스케줄링을 활성화 시키는 profile(dev,sche)과 비활성 profile(prod)를 구분하여 동작하도록 하였습니다.
    * 다른 방법은 MessageQueue(Kafka또는RabbitMQ)가 broker가 되고 Blocking API서버를 worker로 동작하도록 하여 Broker가 제공해주는 데이터만 분산처리하는 방법을 고려할 수 있습니다.   
 * 쿠폰코드 및 관리방안
    * 쿠폰 번호는 UUID를 사용하여 유일성을 보장하였습니다. scale out시에도 uuid를 이용한 쿠폰코드는 충돌 가능성이 적습니다.
@@ -44,6 +45,7 @@ RestAPI 기반의 쿠폰 서비스 웹어플리케이션 입니다.
     * local은 H2 DB로 동작하게 하였으며, dev환경은 MySQL을 사용하도록 세팅하였습니다.
     * 각 RDBMS에서 영향받지 않도록 ID 생성은 Hibernate Sequence전략을 사용하였습니다.
     * local은 H2, dev는 Mysql으로 동작합니다.
+    * 스케줄 on(local,dev,sche)/off(prod) 실행됩니다.
      
 1. MySQL 컨테이너 세팅
    ```
@@ -51,10 +53,10 @@ RestAPI 기반의 쿠폰 서비스 웹어플리케이션 입니다.
 
 2. Build & Run
    ```
-   $ ./gradlew bootRun -DSpring.profile.active=local 또는 dev
+   $ ./gradlew bootRun -DSpring.profile.active=local 또는 dev,sche,prod
    or
    $ ./gradlew build 또는 bootJar
-   $ cd /git/coupon/build/libs/ java -jar coupon.jar -DSpring.profile.active=local 또는 dev 
+   $ cd /git/coupon/build/libs/ java -jar coupon.jar -DSpring.profile.active=local 또는 dev,sche,prod
 
 ## DB setting
 ```
