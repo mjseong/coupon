@@ -38,7 +38,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .authorizeRequests(authorizeRequests ->
                                 authorizeRequests
-                                    .antMatchers("/signup","/auth-test").permitAll()
+                                    .antMatchers("/signup").permitAll()
                                     .antMatchers(HttpMethod.GET, "/authtoken-test", "/api/coupons/user", "/api/coupons/expired-coupon").hasAnyAuthority("SCOPE_coupon:read")
                                     .antMatchers(HttpMethod.POST, "/api/coupons").hasAnyAuthority("SCOPE_coupon_admin:write")
                                     .antMatchers(HttpMethod.PUT, "/api/coupons/**/**").hasAnyAuthority("SCOPE_coupon:write")

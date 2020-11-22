@@ -1,6 +1,5 @@
 package com.assignment.coupon.service.impl;
 
-import com.assignment.coupon.domain.dto.CouponCountDto;
 import com.assignment.coupon.domain.dto.CouponDto;
 import com.assignment.coupon.domain.entity.Coupon;
 import com.assignment.coupon.domain.state.EnumCouponState;
@@ -13,7 +12,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StopWatch;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -83,14 +81,11 @@ public class CouponsServiceImpl implements CouponService {
                                 coupon.getExpireDate());
     }
 
-    @Override
-    public List<String> bulkAssignCoupon(List<String> couponCodes, String userId) {
-
-        //check used couponCodes
-//        couponRepository.findCouponByIdAndUserIdIsNullAndState();
-
-        return null;
-    }
+//    @Override
+//    public List<String> bulkAssignCoupon(List<String> couponCodes, String userId) {
+//
+//        return null;
+//    }
 
     @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
     @Override
