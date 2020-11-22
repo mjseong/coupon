@@ -69,9 +69,9 @@ RestAPI 기반의 쿠폰 서비스 웹어플리케이션 입니다.
   mysql> FLUSH PRIVILEGES;
 ```
 
-# API Description
+## API Description
 Rest API는 인증과 쿠폰으로 나눠 구현되어 있으며, 각표에 설명 및 필수 인자값 표시를 하였음.
-## Auth API
+### Auth API
 
 ##### - Require parameter *표시 
 ##### - accessToken 만료일 30분 설정됨
@@ -80,7 +80,7 @@ Rest API는 인증과 쿠폰으로 나눠 구현되어 있으며, 각표에 설�
 |1|가입| POST| /signup|username*<br>passwrod*<br> adminRole|adminRole=true일때<br> adminRole 부여
 |2|로그인| POST| /signin|username*<br> password*<br>| ResponseBody<br>accessToken(JWT)발급
 
-## Coupon API
+### Coupon API
 
 ##### - Require parameter *표시
 ##### - Http Header Authorization Bearer Token 사용되는 API NAME에 (*)표시
@@ -95,3 +95,8 @@ Rest API는 인증과 쿠폰으로 나눠 구현되어 있으며, 각표에 설�
 |6|사용된<br>쿠폰취소(*)|PUT|/api/coupons/{couponCode}/users/{userName}/cancel| couponCode*<br> userName*| coupon_admin:write|
 |7|당일 만료된<br>쿠폰목록조회(*)|GET|/api/coupons/expired-coupon| searchDate*<br> page<br>size| coupon:write<br>searchDate<br>ex)2020-11-20|
 
+## Future Work
+* 성능테스트
+   * 성능 테스트툴로 검증을 해보지 못했지만, 내부 테스트 코드로 실행결과, 10만건의 쿠폰발행정보와 event정보 2가지를 각각 insert한 단일 실행결과가 약 10sec~12sec 소요되었습니다.
+* 100억개 쿠폰관리 구현
+   *  RDBMS성능에 따라 구현관점이 다른대, 구현된 MySQL에서는 쿠폰정보 테이블의 shading을 해야하며, Oracel,Postgresql과 같이 클러스터 테이블기능을 지원하는 DB
