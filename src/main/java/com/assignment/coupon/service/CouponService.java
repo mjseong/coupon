@@ -13,8 +13,6 @@ public interface CouponService {
 
     public CouponDto assignCoupon(String couponCode, String userId);
 
-//    public List<String> bulkAssignCoupon(List<String> couponCodes, String userId);
-
     public CouponDto useCoupon(String couponCode, String userId);
 
     public CouponDto cancelCoupon(String couponCode, String userId);

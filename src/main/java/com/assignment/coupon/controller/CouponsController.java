@@ -134,11 +134,5 @@ public class CouponsController{
         return new ResponseEntity(coupons, HttpStatus.OK);
     }
 
-    //TODO: 나중에 시간날떄 작성해봐야 겠음.
-//    @PutMapping(value = "/bulk-assign")
-//    public ResponseEntity putBulkAssignCoupons(){
-//        return new ResponseEntity(HttpStatus.OK);
-//    }
-
 
 }

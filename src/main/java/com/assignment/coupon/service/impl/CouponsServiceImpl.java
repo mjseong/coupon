@@ -81,12 +81,6 @@ public class CouponsServiceImpl implements CouponService {
                                 coupon.getExpireDate());
     }
 
-//    @Override
-//    public List<String> bulkAssignCoupon(List<String> couponCodes, String userId) {
-//
-//        return null;
-//    }
-
     @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
     @Override
     public List<CouponDto> findCouponsByUserId(String userId) {
