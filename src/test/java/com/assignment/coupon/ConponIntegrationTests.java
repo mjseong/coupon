@@ -44,15 +44,15 @@ public class ConponIntegrationTests {
     Logger logger = LoggerFactory.getLogger(ConponIntegrationTests.class);
 
     @Autowired
-    MockMvc mockMvc;
+    private MockMvc mockMvc;
     @Autowired
-    CouponService couponService;
+    private CouponService couponService;
     @Autowired
-    CouponRepository couponRepository;
+    private CouponRepository couponRepository;
     @Autowired
-    CustomUserDetailService customUserDetailService;
-    @Autowired
-    ObjectMapper mapper;
+    private CustomUserDetailService customUserDetailService;
+
+    private ObjectMapper mapper;
 
     private static SecureRandom random;
     private static String accessToken;
@@ -65,6 +65,8 @@ public class ConponIntegrationTests {
     public void init(){
         this.random = new SecureRandom();
         try{
+
+            mapper = new ObjectMapper();
             //testUser생성
             this.testUserName = "smj";
             customUserDetailService.createUser("smj","123456", false).getUsername();
@@ -333,6 +335,7 @@ public class ConponIntegrationTests {
     /**
      * 사용자에게 대량 쿠폰 지급;
      * coupon bulk-assign by issuer; put /api/coupons/bulk-assign
+     * 나중에 자구현해보자
      */
 //    @Test
 //    @Order(300)

@@ -1,10 +1,9 @@
 package com.assignment.coupon.config;
 
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.scheduling.annotation.EnableAsync;
 
+@EnableAsync
 @Configuration
-@EnableWebMvc
-public class MvcConfig {
-
+public class AsyncConfig {
 }

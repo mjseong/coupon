@@ -1,6 +1,5 @@
 package com.assignment.coupon.service;
 
-import com.assignment.coupon.domain.dto.CouponCountDto;
 import com.assignment.coupon.domain.dto.CouponDto;
 import com.assignment.coupon.domain.entity.Coupon;
 import org.springframework.data.domain.Pageable;
@@ -13,8 +12,6 @@ public interface CouponService {
     public List<Coupon>createCoupon(long count, Instant expDate);
 
     public CouponDto assignCoupon(String couponCode, String userId);
-
-    public List<String> bulkAssignCoupon(List<String> couponCodes, String userId);
 
     public CouponDto useCoupon(String couponCode, String userId);
 

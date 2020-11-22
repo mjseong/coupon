@@ -25,7 +25,8 @@ RestAPI 기반의 쿠폰 서비스 웹어플리케이션 입니다.
    * SpringBoot-web을 기반으로 개발되어 Blocking Api로 동작하며, Blocking JDBC driver를 이용했기 때문에 완전한 비동기 api동작은 하지 않습니다.<br>
     비동기 api서버 기반으로 개발하려면 Spring webflux 기반으로 개발해야하기 때문에 단기간 개발에 익숙한 web으로 개발하였습니다.
    * 스케줄링 및 쿠폰 만료 알림 기능은 비동기 기능을 활성화 하여 기본 API에 영향 없도록 하였습니다.<br>
-     scale out시 고려할 사항은 스케줄링을 off하고 별도로 스케줄링을 실행해야 합니다. 해당 동작은 서비스 api와 batch job을 분리해서 실행되어야만, 동시성 문제가 발생하지 않습니다.
+   * scale out시 고려할 사항은 스케줄링을 off하고 별도로 스케줄링을 실행해야 합니다. 해당 동작은 서비스 api와 batch job을 분리해서 실행되어야만, 동시성 문제가 발생하지 않습니다.<br>
+   따라서 이 어플리케이션은 스케줄링을 활성화 시키는 profile(dev,sche)과 비활성 profile(prod)를 구분하여 동작하도록 하였습니다.
    * 다른 방법은 MessageQueue(Kafka또는RabbitMQ)가 broker가 되고 Blocking API서버를 worker로 동작하도록 하여 Broker가 제공해주는 데이터만 분산처리하는 방법을 고려할 수 있습니다.   
 * 쿠폰코드 및 관리방안
    * 쿠폰 번호는 UUID를 사용하여 유일성을 보장하였습니다. scale out시에도 uuid를 이용한 쿠폰코드는 충돌 가능성이 적습니다.
@@ -44,6 +45,7 @@ RestAPI 기반의 쿠폰 서비스 웹어플리케이션 입니다.
     * local은 H2 DB로 동작하게 하였으며, dev환경은 MySQL을 사용하도록 세팅하였습니다.
     * 각 RDBMS에서 영향받지 않도록 ID 생성은 Hibernate Sequence전략을 사용하였습니다.
     * local은 H2, dev는 Mysql으로 동작합니다.
+    * 스케줄 on(local,dev,sche)/off(prod) 실행됩니다.
      
 1. MySQL 컨테이너 세팅
    ```
@@ -51,10 +53,10 @@ RestAPI 기반의 쿠폰 서비스 웹어플리케이션 입니다.
 
 2. Build & Run
    ```
-   $ ./gradlew bootRun -DSpring.profile.active=local 또는 dev
+   $ ./gradlew bootRun -DSpring.profile.active=local 또는 dev,sche,prod
    or
    $ ./gradlew build 또는 bootJar
-   $ cd /git/coupon/build/libs/ java -jar coupon.jar -DSpring.profile.active=local 또는 dev 
+   $ cd /git/coupon/build/libs/ java -jar coupon.jar -DSpring.profile.active=local 또는 dev,sche,prod
 
 ## DB setting
 ```
@@ -67,18 +69,18 @@ RestAPI 기반의 쿠폰 서비스 웹어플리케이션 입니다.
   mysql> FLUSH PRIVILEGES;
 ```
 
-# API Description
+## API Description
 Rest API는 인증과 쿠폰으로 나눠 구현되어 있으며, 각표에 설명 및 필수 인자값 표시를 하였음.
-## Auth API
+### Auth API
 
 ##### - Require parameter *표시 
 ##### - accessToken 만료일 30분 설정됨
 | NO | API NAME | HTTP<br>method|API PATH | API PARAM | DESC | 
 |---:|----------------------:|---:|----------------------:|------------------------:|--------------------:| 
-|1|가입| POST| /signup|username*<br>passwrod*<br> adminRole|adminRole=true일때<br> adminRole 부여
+|1|가입| POST| /signup|username*<br>password*<br> adminRole|adminRole=true일때<br> adminRole 부여
 |2|로그인| POST| /signin|username*<br> password*<br>| ResponseBody<br>accessToken(JWT)발급
 
-## Coupon API
+### Coupon API
 
 ##### - Require parameter *표시
 ##### - Http Header Authorization Bearer Token 사용되는 API NAME에 (*)표시
@@ -93,3 +95,15 @@ Rest API는 인증과 쿠폰으로 나눠 구현되어 있으며, 각표에 설�
 |6|사용된<br>쿠폰취소(*)|PUT|/api/coupons/{couponCode}/users/{userName}/cancel| couponCode*<br> userName*| coupon_admin:write|
 |7|당일 만료된<br>쿠폰목록조회(*)|GET|/api/coupons/expired-coupon| searchDate*<br> page<br>size| coupon:write<br>searchDate<br>ex)2020-11-20|
 
+## Future Work
+- 성능테스트
+   * 성능 테스트툴로 검증을 해보지 못했지만, 테스트 코드를 이용해 10만건의 쿠폰발행정보와 event정보 2가지를 insert한 실행결과, 약 10sec~12sec 소요되었습니다.
+   * scale out상황에서 API호출 성능 테스트는 진행하지 못하였습니다. 추후 Docker기반 컨테이너로 실행하여 단일과 scale out상황에서 RDBMS와 연관성 그리고 처리량을 측정해야 겠습니다.
+- 100억개 쿠폰코드를 관리하기 위해서는 DB sharding을 고려해야 합니다.
+   * 쿠폰코드 위주의 검색과 만료일 위주의 검색으로 나눌 수 있는대, 과거 데이터 검색과 쿠폰 만료처리, 쿠폰 만료알림과 같이 날짜 검색후 기능이 동작하기 위해서는 RangeBased기반의 샤딩이 유리해보입니다. 만료일 기반으로 나눈다면, 분포도가 만료일이에 따라 균등하지 못할 수 있습니다. 따라서 분할 기준 월,분기,년 단위에서 조절이 필요할 것 같습니다.
+   * 쿠폰코드를 이용한 HashBaed 샤딩일 경우 쿠폰코드 기반 검색과 데이터 분포에는 유리하지만, 만료일과 같은 날짜 검색에는 모든 DB를 검색할 수 있어 쿠폰 만료처리, 쿠폰 만료알림과 같은 Batch job에 불리할 수 있습니다. 또한 확장이 Rangebased 샤딩보다 어려워 관리가 어렵다고 판단됩니다.
+   * RangeBased기반 샤딩에서 검색성능의 최적화를 위해 exprieDate을 검색조건으로 사용해야 합니다. 현재 쿠폰코드를 uuid로만 구현했기 때문에 exprieDate에 대한 정보를 포함해야 합니다. 추후에 쿠폰코드 생성기를 만들어 적용해야할 것 같습니다.
+   
+   
+   
+      

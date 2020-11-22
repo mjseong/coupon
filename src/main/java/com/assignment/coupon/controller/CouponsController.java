@@ -15,6 +15,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
@@ -28,7 +29,7 @@ import java.util.List;
 @Validated
 @RestController
 @RequestMapping("/api/coupons")
-public class CouponsController extends BaseController{
+public class CouponsController{
 
     private final CouponService couponService;
 
@@ -38,7 +39,7 @@ public class CouponsController extends BaseController{
 
     @PostMapping
     @ResponseBody
-    public ResponseEntity createCoupons(@RequestBody IssueDto issueDto){
+    public ResponseEntity createCoupons(@RequestBody @Valid IssueDto issueDto){
 
         Instant expireDate = null;
 
@@ -67,11 +68,6 @@ public class CouponsController extends BaseController{
         CouponDto coupon = couponService.assignCoupon(couponCode, userName);
 
         return new ResponseEntity(coupon, HttpStatus.OK);
-    }
-
-    @PutMapping(value = "/bulk-assign")
-    public ResponseEntity putBulkAssignCoupons(){
-        return new ResponseEntity(HttpStatus.OK);
     }
 
     @PutMapping(value = "/{couponCode}/users/{userName}/use")
