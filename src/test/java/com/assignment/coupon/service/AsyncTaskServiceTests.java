@@ -2,8 +2,6 @@ package com.assignment.coupon.service;
 
 
 import com.assignment.coupon.domain.state.EnumCouponState;
-import com.assignment.coupon.repository.CouponRepository;
-import org.awaitility.Awaitility;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -21,7 +19,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import static org.awaitility.Awaitility.await;
-
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest

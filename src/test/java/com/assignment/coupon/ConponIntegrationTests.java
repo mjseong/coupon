@@ -28,6 +28,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -76,7 +77,7 @@ public class ConponIntegrationTests {
             logger.debug(e.getMessage());
         }
 
-        this.dumyCouponCode = couponService.createCoupon(1, null).stream().findFirst().orElseThrow().getCouponCode();
+        this.dumyCouponCode = couponService.createCoupon(1, null).stream().findFirst().orElseThrow(()->new NoSuchElementException()).getCouponCode();
 
     }
 
@@ -235,9 +236,22 @@ public class ConponIntegrationTests {
 //    @Disabled
     @Test
     @Order(9)
-    void findAssignedCouponTest() throws Exception {
+    void findAssignedCouponByUserTest() throws Exception {
 
         MvcResult couponResult = this.mockMvc.perform(get("/api/coupons/user")
+                .header("Authorization", "bearer "+this.accessToken)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+    }
+
+    @Test
+    @Order(10)
+    void findAssignedCouponTest() throws Exception {
+
+        MvcResult couponResult = this.mockMvc.perform(get("/api/coupons/"+this.dumyCouponCode)
                 .header("Authorization", "bearer "+this.accessToken)
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .contentType(MediaType.APPLICATION_JSON_VALUE))

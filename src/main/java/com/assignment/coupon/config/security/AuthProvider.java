@@ -45,7 +45,7 @@ public class AuthProvider implements AuthenticationProvider {
 
             //2. password vaild check
             if(!passwordEncoder.matches(password,user.getPassword())){
-                log.info("userName & password not valid");
+                log.debug("userName & password not valid");
                 throw new UserCredentialNotValidException("userName & password not valid");
             }
 
@@ -53,7 +53,7 @@ public class AuthProvider implements AuthenticationProvider {
             details.put("user",user);
 
         }catch (UsernameNotFoundException e){
-            log.info(e.getMessage());
+            log.debug(e.getMessage());
             throw new UserCredentialNotValidException("userName & password not valid");
         }
 
