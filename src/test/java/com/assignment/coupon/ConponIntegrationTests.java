@@ -236,9 +236,22 @@ public class ConponIntegrationTests {
 //    @Disabled
     @Test
     @Order(9)
-    void findAssignedCouponTest() throws Exception {
+    void findAssignedCouponByUserTest() throws Exception {
 
         MvcResult couponResult = this.mockMvc.perform(get("/api/coupons/user")
+                .header("Authorization", "bearer "+this.accessToken)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+    }
+
+    @Test
+    @Order(10)
+    void findAssignedCouponTest() throws Exception {
+
+        MvcResult couponResult = this.mockMvc.perform(get("/api/coupons/"+this.dumyCouponCode)
                 .header("Authorization", "bearer "+this.accessToken)
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .contentType(MediaType.APPLICATION_JSON_VALUE))

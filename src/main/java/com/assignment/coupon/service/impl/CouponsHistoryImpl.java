@@ -65,10 +65,9 @@ public class CouponsHistoryImpl implements CouponHistService {
 //                                                                    coupon.getUpdateDate());
 
         if(couponHist!=null){
-            log.info("insert success");
+            log.debug("insert success");
             return 1;
         }
-        log.info("insert faii");
         return 0;
     }
 }

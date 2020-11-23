@@ -11,6 +11,7 @@ import java.util.UUID;
 @Slf4j
 public class CouponCodeUtils {
 
+    //TODO: sharding couponCode 생성은 나중에 좀더 연구해야 할듯 uuid를 대체할만한 유닉키를 찾아 붙이면 될듯 싶은대 ...
     public static String generateCodeInExpire(Instant expDate){
 
         long expireDateMillis = expDate.toEpochMilli();

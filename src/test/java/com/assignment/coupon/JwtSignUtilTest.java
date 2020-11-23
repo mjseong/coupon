@@ -2,18 +2,9 @@ package com.assignment.coupon;
 
 import com.assignment.coupon.utils.CouponCodeUtils;
 import com.assignment.coupon.utils.SignKeyUtils;
-
-import com.fasterxml.jackson.databind.deser.std.UUIDDeserializer;
-import com.fasterxml.uuid.EthernetAddress;
-import com.fasterxml.uuid.Generators;
-import com.fasterxml.uuid.UUIDClock;
-import com.fasterxml.uuid.UUIDTimer;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.nio.ByteBuffer;
 import java.time.Instant;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.UUID;

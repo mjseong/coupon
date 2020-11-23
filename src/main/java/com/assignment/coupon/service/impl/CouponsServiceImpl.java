@@ -51,7 +51,7 @@ public class CouponsServiceImpl implements CouponService {
 //        log.info("couponHistService.bulkInsertLog : " + stopWatch.getTotalTimeSeconds());
 
         if(saveHistCount==saveCount){
-            log.info("Issue history Insert complete");
+            log.info(String.format("complete, Issue history Insert count: %d ",saveHistCount));
         }
 
         if(saveCount!=count){

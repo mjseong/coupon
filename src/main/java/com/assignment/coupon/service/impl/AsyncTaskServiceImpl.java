@@ -35,7 +35,7 @@ public class AsyncTaskServiceImpl implements AsyncTaskService {
         Instant toExpDate = Instant.now().truncatedTo(ChronoUnit.DAYS);
         Instant formExpDate = toExpDate.minus(Duration.ofDays(3));
 
-        log.info(String.format("expireDate_range: %s ~ %s",formExpDate, toExpDate));
+        log.debug(String.format("expireDate_range: %s ~ %s",formExpDate, toExpDate));
 
         List<Coupon> coupons = couponService.findCouponsByExpireDateBetweenAndState(formExpDate, toExpDate, null).stream()
                                             .filter(f->!f.getState().equals(EnumCouponState.EXPIRE.getState()))
@@ -64,7 +64,7 @@ public class AsyncTaskServiceImpl implements AsyncTaskService {
         Instant formExpDate = Instant.now().plus(Duration.ofDays(3)).truncatedTo(ChronoUnit.DAYS);
         Instant toExpireDate = formExpDate.plus(Duration.ofDays(1));
 
-        log.info(String.format("before3Day: %s ~ %s",formExpDate, toExpireDate));
+        log.debug(String.format("before3Day: %s ~ %s",formExpDate, toExpireDate));
 
         List<String> codes = couponService.findCouponsByExpireDateBetweenAndState(formExpDate, toExpireDate, EnumCouponState.ASSIGN.getState()).stream()
                                         .parallel()
