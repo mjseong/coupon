@@ -28,6 +28,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -76,7 +77,7 @@ public class ConponIntegrationTests {
             logger.debug(e.getMessage());
         }
 
-        this.dumyCouponCode = couponService.createCoupon(1, null).stream().findFirst().orElseThrow().getCouponCode();
+        this.dumyCouponCode = couponService.createCoupon(1, null).stream().findFirst().orElseThrow(()->new NoSuchElementException()).getCouponCode();
 
     }
 
