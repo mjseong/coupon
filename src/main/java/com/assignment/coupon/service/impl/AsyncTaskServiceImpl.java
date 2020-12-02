@@ -28,7 +28,7 @@ public class AsyncTaskServiceImpl implements AsyncTaskService {
         this.couponHistService = couponHistService;
     }
 
-    @Async
+    @Async(value = "taskExpireExecutor")
     public CompletableFuture<Boolean> expireCoupons(){
 
         CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
@@ -56,7 +56,7 @@ public class AsyncTaskServiceImpl implements AsyncTaskService {
 
     }
 
-    @Async
+    @Async(value = "taskSendMessageExecutor")
     public CompletableFuture<Long> notice3DaysExpirationCoupons(){
 
         CompletableFuture<Long> completableFuture = new CompletableFuture<>();
