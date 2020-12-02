@@ -10,10 +10,10 @@ import java.time.Instant;
 @Table(name = "coupon_hist",
         uniqueConstraints = {@UniqueConstraint(name = "idx_uniq_coupon_info_01", columnNames = {"coupon_code","coupon_state","coupon_event","coupon_udate"})},
         indexes = {@Index(name="idx_coupon_hist_01", columnList = "chist_cdate")})
-@SequenceGenerator(name = "COUPONHIST_SEQ_GEN",
-        sequenceName = "COUPON_HIST_SEQ",
-        allocationSize = 100
-)
+//@SequenceGenerator(name = "COUPONHIST_SEQ_GEN",
+//        sequenceName = "COUPON_HIST_SEQ",
+//        allocationSize = 100
+//)
 @Data
 public class CouponHist {
 
@@ -30,8 +30,8 @@ public class CouponHist {
     }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "COUPONHIST_SEQ_GEN")
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "COUPONHIST_SEQ_GEN")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name= "chist_id")
     private long id;
 
