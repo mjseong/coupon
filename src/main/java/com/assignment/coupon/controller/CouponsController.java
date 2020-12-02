@@ -118,6 +118,7 @@ public class CouponsController{
         return new ResponseEntity(coupon, HttpStatus.OK);
     }
 
+
     //발급코드 당일 만료건 조회
     @GetMapping(value = "/expired-coupon")
     public ResponseEntity getExpiredCoupons(@DateTimeFormat(pattern = "yyyy-MM-dd")

@@ -31,6 +31,6 @@ public interface CouponService {
 
     public String expireNotice(String couponCode, String userId);
 
-
+    public List<Coupon> findAll();
 
 }

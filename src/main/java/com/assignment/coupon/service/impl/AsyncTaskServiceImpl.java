@@ -8,12 +8,16 @@ import com.assignment.coupon.service.CouponService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 
 @Service
@@ -66,11 +70,33 @@ public class AsyncTaskServiceImpl implements AsyncTaskService {
 
         log.debug(String.format("before3Day: %s ~ %s",formExpDate, toExpireDate));
 
-        List<String> codes = couponService.findCouponsByExpireDateBetweenAndState(formExpDate, toExpireDate, EnumCouponState.ASSIGN.getState()).stream()
-                                        .parallel()
-                                        .map(p->{
-                                            return couponService.expireNotice(p.getCouponCode(), p.getUserId());
-                                        }).collect(Collectors.toList());
+
+        /**
+         * Stream.parallel 의 고찰
+         * paralle은 forkjoinpool이라는 common pool을 사용하는대, 이것은 i/o관련된 로직호출시 blocking이 발생되어 다른 thread에 영향이 있을수 있다.
+         * Paralle()을 stream마다 사용한다면, 모든  paralle() 호출 로직에서 common pool을 사용하기 때문에 thread의 경합이 발생되어 성능저하에 영향이 커진다.
+         * 따라서 forkjoinPool을 수동으로 선언하고 그 선언된 특정 forkJoinpool내에서 실행되도록 코드를 작성해야 한다.
+         */
+
+        //새로운 forkJoinPool을 생성한다.
+        ForkJoinPool joinPool = new ForkJoinPool(5);
+        List<String> codes = null;
+        try {
+            codes = joinPool.submit(()->couponService.findCouponsByExpireDateBetweenAndState(formExpDate, toExpireDate, EnumCouponState.ASSIGN.getState()).stream()
+                                                .parallel()
+                                                .map(p->{
+                                                    return couponService.expireNotice(p.getCouponCode(), p.getUserId());
+                                                }).collect(Collectors.toList())
+            ).get();
+        } catch (InterruptedException e) {
+            log.error(e.getMessage());
+            completableFuture.cancel(false);
+            return completableFuture;
+        } catch (ExecutionException e) {
+            log.error(e.getMessage());
+            completableFuture.cancel(false);
+            return completableFuture;
+        }
 
         log.info(String.format("Notifications have been delivered to %d users", codes.size()));
         completableFuture.complete((long) codes.size());

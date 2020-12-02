@@ -126,6 +126,11 @@ public class CouponsServiceImpl implements CouponService {
         return couponCode;
     }
 
+    @Override
+    public List<Coupon> findAll() {
+        return couponRepository.findAll();
+    }
+
     @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
     @Override
     public CouponDto findByCouponCodeAndStateAndUserNotNull(String couponCode, String state) {
